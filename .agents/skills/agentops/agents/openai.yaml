@@ -1,0 +1,4 @@
+interface:
+  display_name: "AgentOps 多智能体项目"
+  short_description: "用主智能体和市场、需求、架构、编码、测试智能体完成项目"
+  default_prompt: "使用 $agentops，把我的最终目标拆解、组织并交付为完整项目。"
