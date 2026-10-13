@@ -93,6 +93,8 @@ function Invoke-AgentOpsInit {
 
     $finalGoal = Read-Value -Prompt '请输入项目的最终目标' -Current $Goal
     if ([string]::IsNullOrWhiteSpace($finalGoal)) { throw '最终目标不能为空。' }
+    $script:Goal = $finalGoal
+    $script:ProjectPath = $resolved
     $name = if ([string]::IsNullOrWhiteSpace($ProjectName)) { Split-Path -Leaf $resolved } else { $ProjectName.Trim() }
 
     if (Test-Path -LiteralPath $resolved) {
