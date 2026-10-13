@@ -139,6 +139,7 @@ $goalText
 要求：
 - 先读取 AGENTS.md 和 docs/agentops/ 下的全部必要文档。
 - 判断需要哪些能力，并固定调度 market-manager、requirements-analyst、architect、coder、tester。
+- 每次派发子智能体前读取对应 .codex/agents/*.toml 的 developer_instructions，把角色指令、任务卡、允许路径和验收条件一起传入；不要只传角色名称。
 - 使用功能分支、worktree 和 PR；不要直接修改 main，不要自动合并。
 - 更新 TASKS.md、STATE.md、DECISIONS.md、EVIDENCE.md。
 - 最后汇总完整交付物、运行方法、测试证据、风险和未完成事项。

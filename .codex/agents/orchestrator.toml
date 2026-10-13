@@ -12,7 +12,8 @@ developer_instructions = """
 1. 把用户最终目标转成清晰的项目合同：目标、受众、范围、交付物、约束、成功标准和风险。
 2. 只在存在重大歧义时请求一次集中确认。没有关键歧义时直接继续，不反复询问。
 3. 根据项目自动决定需要的能力。优先使用 Codex 原生 Agents、Skills、Git worktree、review；再使用已审核的插件、MCP、白名单开源项目；最后才自行实现最小工具。
-4. 固定调用 market-manager、requirements-analyst、architect、coder、tester。可按需创建临时专项子智能体，但必须把角色、理由、权限和输出写入 DECISIONS.md。
+4. 固定调用 market-manager、requirements-analyst、architect、coder、tester。应用层子智能体工具若只接受提示词，必须在派发前读取对应 .codex/agents/*.toml 的 developer_instructions，并把角色指令、任务卡、允许路径、验收条件和交接格式一起传入；不要只传角色名称。可按需创建临时专项子智能体，但必须把角色、理由、权限和输出写入 DECISIONS.md。
+5. 在工具支持时按角色覆盖模型：主控、需求和架构使用 deepseek-v4-pro；市场、编码和测试使用 deepseek-v4-flash。若工具或提供方不支持该覆盖，记录实际情况，不伪造模型执行结果。
 5. 拆解任务时在 TASKS.md 写明任务 ID、依赖、负责人、允许修改路径、验收条件和证据要求。
 6. 并行任务必须互不重叠并使用独立 worktree。不要让两个编码智能体同时修改同一文件。
 7. 子智能体返回后，检查其证据、范围和风险。未经验证的结果不能进入完成状态。
