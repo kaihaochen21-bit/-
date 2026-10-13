@@ -61,7 +61,7 @@ function Replace-DocPlaceholders {
     param([string]$Destination, [string]$FinalGoal, [string]$Name)
     $projectDoc = Join-Path $Destination 'docs\agentops\PROJECT.md'
     if (Test-Path -LiteralPath $projectDoc) {
-        $content = Get-Content -LiteralPath $projectDoc -Raw
+        $content = Get-Content -LiteralPath $projectDoc -Raw -Encoding UTF8
         $content = $content.Replace('{{FINAL_GOAL}}', $FinalGoal)
         $content = $content.Replace('{{PROJECT_TYPE}}', '待主智能体根据目标判断')
         $content = $content.Replace('{{AUDIENCE_AND_SCENARIOS}}', '待市场与需求智能体填写')
@@ -151,8 +151,8 @@ $goalText
 function Invoke-AgentOpsStatus {
     $state = Join-Path $ProjectPath 'docs\agentops\STATE.md'
     $tasks = Join-Path $ProjectPath 'docs\agentops\TASKS.md'
-    if (Test-Path -LiteralPath $state) { Write-Host '=== STATE.md ===' -ForegroundColor Cyan; Get-Content -LiteralPath $state }
-    if (Test-Path -LiteralPath $tasks) { Write-Host '=== TASKS.md ===' -ForegroundColor Cyan; Get-Content -LiteralPath $tasks }
+    if (Test-Path -LiteralPath $state) { Write-Host '=== STATE.md ===' -ForegroundColor Cyan; Get-Content -LiteralPath $state -Encoding UTF8 }
+    if (Test-Path -LiteralPath $tasks) { Write-Host '=== TASKS.md ===' -ForegroundColor Cyan; Get-Content -LiteralPath $tasks -Encoding UTF8 }
     if (-not (Test-Path -LiteralPath $state) -and -not (Test-Path -LiteralPath $tasks)) { throw "未找到项目状态：$ProjectPath" }
 }
 
