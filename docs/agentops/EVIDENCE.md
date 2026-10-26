@@ -63,3 +63,12 @@
 - `docs/agentops/RESEARCH.md`
 - `docs/agentops/LEADS.md`
 - `docs/agentops/REQUIREMENTS.md`
+## TASK-012 低成本渠道证据（2026-10-26）
+
+- `https://support.upwork.com/hc/en-us/articles/211062898-Connects`：HTTP 200；官方说明 Connects 用于提交 proposal，单价 $0.15，新用户可能在购买或订阅后获得一次性 50 个 Connects，部分用户每月有 10 个免费 Connects。
+- `https://www.freelancer.com/feesandcharges/`：HTTP 200；官方说明注册免费，免费会员每月可投 6 次 bid，投标可能要求最低账户余额；项目成交后平台收取费用，固定价和按小时项目约 10% 或最低 $5。
+- `https://eleduck.com/`：HTTP 200；公开首页有“机会/项目/招聘/自由职业”入口，使用社区“电量”机制，未见上万元投标会员要求。
+- `https://remote-china.com/jobs/2099`、`/2210`、`/2131`：此前公开页可访问，原文需登录后查看；未见大额投标会员门槛。
+- `https://www.zbj.com/`：HTTP 200；首页出现“免费开店赚钱”，但具体任务是否收取保证金、服务费或要求会员需逐单核验。
+- 结论：一品威客 D001/D002/D003 因 VIP 门槛暂时降级；优先执行 Remote-China、V2EX、电鸭等低成本或免费申请渠道。
+- 未注册付费会员、未充值、未发送任何消息。
