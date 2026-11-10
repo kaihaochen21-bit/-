@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>即梦小说推文内容工厂</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>即梦小说推文内容工厂</h1>
+      <p class="sub">Seedream + Seedance · Pexels + Pixabay · 半自动发布包</p>
+    </div>
+    <div id="healthPills" class="pills"></div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card">
+        <h2>新建项目</h2>
+        <form id="createForm" class="stack">
+          <label>标题<input name="title" required maxlength="100" placeholder="例如：她离开后，他才看见真相"></label>
+          <label>类型<input name="genre" maxlength="30" placeholder="甜宠 / 悬疑 / 古风 / 逆袭"></label>
+          <label>小说文本<textarea name="source_text" required rows="7" placeholder="粘贴自有或已授权的小说片段"></textarea></label>
+          <label>授权状态
+            <select name="rights_status">
+              <option value="unconfirmed">未确认</option>
+              <option value="owned">自有</option>
+              <option value="authorized">已授权</option>
+            </select>
+          </label>
+          <div class="row">
+            <label>目标时长<input name="target_duration" type="number" value="30" min="15" max="60"></label>
+            <label>单条预算<input name="budget_limit_cny" type="number" value="20" min="1" max="100" step="0.01"></label>
+          </div>
+          <button type="submit" class="primary">创建项目</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="section-title"><h2>项目队列</h2><button id="refreshBtn" class="ghost small">刷新</button></div>
+        <div id="projectList" class="project-list empty">还没有项目</div>
+      </section>
+
+      <section class="card">
+        <h2>本月数据</h2>
+        <div id="dashboard" class="stats"></div>
+      </section>
+    </aside>
+
+    <section class="main-panel">
+      <section id="detailCard" class="card detail-card hidden">
+        <div class="detail-head">
+          <div>
+            <p class="eyebrow">当前项目</p>
+            <h2 id="detailTitle"></h2>
+            <p id="detailMeta" class="muted"></p>
+          </div>
+          <span id="detailStatus" class="badge"></span>
+        </div>
+
+        <div class="actions">
+          <button data-action="auto-script">生成脚本和分镜</button>
+          <button data-action="asset-search">搜索免费素材</button>
+          <button data-action="dry-run">估算成本</button>
+          <button data-action="confirm-generate" class="warning">确认即梦生成</button>
+          <button data-action="render">渲染 9:16 视频</button>
+          <button data-action="package">生成发布包</button>
+        </div>
+
+        <div id="costBox" class="notice hidden"></div>
+        <div id="scriptBox" class="script-box"></div>
+        <h3>镜头计划</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>时长</th><th>类型</th><th>旁白</th><th>素材</th></tr></thead>
+            <tbody id="shotsBody"></tbody>
+          </table>
+        </div>
+
+        <div id="assetBox" class="asset-box hidden">
+          <h3>候选素材</h3>
+          <div id="assetList"></div>
+        </div>
+
+        <div id="publishBox" class="publish-box hidden">
+          <h3>发布包</h3>
+          <div class="publish-actions">
+            <a id="videoLink" class="button-link" target="_blank">预览成片</a>
+            <a id="douyinCover" class="button-link" target="_blank">抖音封面</a>
+            <a id="xhsCover" class="button-link" target="_blank">小红书封面</a>
+          </div>
+          <div id="postList"></div>
+        </div>
+      </section>
+
+      <section class="card empty-detail" id="emptyDetail">
+        <h2>从一个小说片段开始</h2>
+        <p>创建项目后，按“生成脚本 → 搜索素材 → 估算成本 → 确认生成 → 渲染 → 打包”的顺序操作。</p>
+        <p class="muted">程序只负责内容生产与发布包，不会登录或自动发布到抖音/小红书。</p>
+      </section>
+
+      <section class="card">
+        <div class="section-title"><h2>手动素材</h2><button id="refreshManual" class="ghost small">刷新</button></div>
+        <p class="muted">把已授权素材放入 <code>assets/manual/</code>，填写许可证后关联到当前项目镜头。</p>
+        <div id="manualAssets" class="manual-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>客户线索</h2>
+        <form id="leadForm" class="stack compact">
+          <div class="row">
+            <label>平台<input name="platform" placeholder="抖音 / 小红书 / 私信"></label>
+            <label>昵称<input name="nickname" placeholder="客户昵称"></label>
+          </div>
+          <div class="row">
+            <label>需求<input name="need_type" placeholder="小说推文 / 漫剧 / 剪辑"></label>
+            <label>预算<input name="budget_range" placeholder="例如 300-800"></label>
+          </div>
+          <label>下一步<input name="next_action" placeholder="发案例 / 约沟通 / 报价"></label>
+          <label>备注<textarea name="notes" rows="2"></textarea></label>
+          <label class="check"><input name="qualified" type="checkbox"> 这是有效客户线索</label>
+          <button type="submit">记录线索</button>
+        </form>
+        <div id="leadList" class="lead-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>运行日志</h2>
+        <pre id="output" class="output">等待操作…</pre>
+      </section>
+    </section>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

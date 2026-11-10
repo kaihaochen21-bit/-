@@ -80,3 +80,145 @@
 - 智联原职位页当前返回 HTTP 404；搜索结果缓存显示原岗位发布日期为 2025-08-01，岗位为“AI视频制作-居家办公”，薪资 100–200 元/时。
 - 结论：Remote-China 的 2026-10-08 是聚合页/转载时间，不能证明岗位当前有效。D004 降为 C 级过期线索，不为该条充值积分。
 - 未注册 Remote-China、未充值、未联系发布者。
+
+## TASK-013 《执光》投标文字方案（2026-11-08）
+
+### 附件核对
+
+- 原始压缩包：`C:/Users/陈楷浩/OneDrive/桌面/Downloads/549f9f7f850445c480cf82941b771fdb_20261107134008A814.zip`
+- 附件编码异常，按文件类型提取到 `projects/ai_video_bid_20261108/attachments/`；未修改原始压缩包。
+- 剧本文件：`file_09.docx`，解析文本见 `projects/ai_video_bid_20261108/file_09_parsed.txt`，正文约10分钟版《执光》，包含10场及补场。
+- 结构文件：`file_10.docx`，解析文本见 `projects/ai_video_bid_20261108/file_10_parsed.txt`，标题为《执光》故事大纲·结构表，标注11段、约4分33秒、16:9。
+- 视频初稿：`file_01.mp4`，实测1922×1080、60fps、11972帧、199.533秒，含视频和音频轨道。
+
+### 案例证据
+
+- `projects/beijing_age_slice/beijing_age_slice_4s_720p_trial_v3.mp4`：1280×720、16:9、24fps、4.00秒、无音轨；对应运镜与年代转场能力。
+- `projects/等雨停_试稿/等雨停_完整10镜头_480p_修正版_final.mp4`：约50.92秒、9:16、480p、10镜头；对应叙事、转场、配音字幕与后期质检能力。
+- 不将客户提供的《执光》初稿作为投标自有案例；案例定义以真实项目文件为准。
+
+### 交付与验证
+
+- `projects/ai_video_bid_20261108/执光_投标文字方案_v1.docx`
+- `projects/ai_video_bid_20261108/执光_投标文字方案_v1.md`
+- `projects/ai_video_bid_20261108/平台填写版_执光_v1.txt`
+- `projects/ai_video_bid_20261108/qa_render/执光_投标文字方案_v1.pdf`：6页；页面内容边界在 62.4–549.5pt 范围内；已通过章节存在性检查。
+- 未付费生成、未对外发送、未发布、未创建PR。
+- `projects/ai_video_bid_20261108/执光_投标发送包_20261108.zip`：17,520,677 bytes，含DOCX、PDF、平台文字、两条案例视频和两张检查图。
+
+
+## TASK-014 《心光如潮》10秒试稿分析（2026-11-08）
+
+### 输入核对
+
+- 脚本：`C:/Users/陈楷浩/OneDrive/桌面/Downloads/c7b531fc93374aa5bf88ff20e953b5bd_20261105204636A367.txt`；解析出约22个唯一画面、11段旁白，时间标注为0:00–3:35。
+- 小说正文：`C:/Users/陈楷浩/OneDrive/桌面/Downloads/3cfc1ea01a9142c19bf220f1237e6332_20261105200810A363.txt`；用于补充人物关系和叙述语气。
+- 画面12–14原文：`projects/ai_video_bid_20261108/心光如潮_画面12-14原文.txt`。
+- 角色参考图：下载到 `projects/ai_video_bid_20261108/character_refs/`；第一张2848×1600，第二张1536×1536。
+- 用户已确认：红框就是两张图的脸部区域；第一张为秦谪，第二张为姜清漓。此前自动红色区域检测未识别到完整矩形框，不影响按脸部区域作为身份锚点。
+
+### 方案产物
+
+- `projects/ai_video_bid_20261108/心光如潮_试稿执行方案_v1.md`：含10秒三段分镜、音频取舍、角色设定卡提示词、三张关键帧提示词、三条图生视频提示词、缺失清单、预算和工期风险。
+- `projects/ai_video_bid_20261108/心光如潮_统计.txt`：画面/旁白/章节统计。
+
+### 未执行
+
+- 未调用付费图片/视频API，未生成试片，未发送或发布任何内容。
+
+## TASK-014 费用与参考核对（2026-11-08）
+
+- 官方模型价格页：`https://ark.volcengine.com/region:cn-beijing/docs/model-pricing`；本地抽取：`projects/ai_video_bid_20261108/official_model-pricing.md`。
+- Seedream 5.0 Flash：输出 0.12元/张，输入图免费。
+- Seedance 2.0 Mini 720p：约0.50元/秒；Seedance 2.0 标准版720p：约0.99元/秒；Seedance 2.5 720p：约1.51元/秒。
+- 10秒试片推荐路线：Seedream约6–12张图 + Seedance 2.0标准版20–30秒等效候选，预计31–38元，建议上限50元。
+- 外部参考链接打开为淘乎任务页，未取得可播放的《劫缘难避》视频；未据此声称完成镜头拆解。
+- 未发起付费生成，等待用户确认预算。
+
+## TASK-014 最终交付（2026-11-08）
+
+### 成片
+
+- `projects/ai_video_bid_20261108/generation/final/心光如潮_10秒试稿_720p.mp4`：5,325,489 bytes。
+- 720×1280、24fps、240帧、10.00秒、H.264 High yuv420p、AAC 48kHz立体声。
+- 中文字幕、右上角“试稿 · 心光如潮”水印、原创氛围音乐已合成。
+- 技术QC：无长黑帧/冻结；音频峰值约 -1.5dB；只有片尾淡出黑帧。
+
+### 选片
+
+- 画面12A：人脸一致性平均 0.885、最低 0.859。
+- 画面13A：最高 0.890、平均 0.791。
+- 画面14B：最高 0.681、平均 0.631。
+- 说明：SFace 对2D漫脸只作相对排序，不等同于客户审美验收。
+
+### 成本
+
+- Seedream 5.0 Flash：8张 ×0.12 = 0.96元。
+- Seedance 2.0标准版：6条 ×87,300 tokens = 523,800 tokens；按46元/百万tokens约24.09元。
+- API合计约25.05元，低于31–38元区间和50元上限。
+
+### 交付包
+
+- `projects/ai_video_bid_20261108/generation/心光如潮_10秒试稿_交付包_20261108.zip`：41,304,883 bytes，25个文件，含成片、字幕、设定卡、关键帧、选用片段、全部候选、配音、音乐、说明和成本记录。
+
+### 第三方工具
+
+- `imageio-ffmpeg 0.8.1`（BSD-2-Clause）用于本地视频封装。
+- OpenCV Zoo YuNet / SFace 模型（Apache-2.0）用于面部一致性质检，不随成片分发。
+
+## TASK-015 FormFunk 18秒广告（2026-11-10）
+
+### 成片
+
+- `projects/formfunk_ad_20261109/generation/final/FormFunk_蓝线生长_18秒品牌广告.mp4`：8,470,617 bytes。
+- 720×1280、24fps、432帧、18.00秒、H.264 High yuv420p、AAC 48kHz立体声。
+- 英文字幕、英文旁白、原创氛围音乐、FormFunk片尾字标已合成。
+- 技术QC：无长黑帧/冻结；第1帧为淡入黑场；音频峰值约-4dB。
+
+### 产品匹配
+
+- 镜1B：SIFT约259（抽检）。
+- 镜2A：约135。
+- 镜3B：约113。
+- 镜4A：约338，作为产品英雄镜头。
+- 镜5B：约185。
+
+### 成本
+
+- Seedream 5.0 Flash：10张 ×0.12 = 1.20元。
+- Seedance 2.0标准版：10条 ×87,300 tokens = 873,000 tokens；按46元/百万tokens约40.16元。
+- 合计约41.36元，低于65元上限。
+
+### 交付包
+
+- `projects/formfunk_ad_20261109/generation/FormFunk_蓝线生长_18秒广告_交付包_20261110.zip`：54,603,923 bytes，35个文件，含成片、字幕、关键帧、选用片段、全部候选、配音、音乐、说明和成本记录。
+
+### 限制
+
+- 两条参考视频未收到，未声称复刻参考片。
+- 未收到正式Logo矢量，片尾使用临时文字排版。
+
+## TASK-016 即梦 API 半自动小说推文内容工厂（2026-11-10）
+
+### 环境验证
+
+- `ARK_API_KEY` 已配置。
+- `seedream_health_check`：`ok=true`，默认模型 `doubao-seedream-5-0-flash-260915`，模型列表可访问。
+- `seedance_health_check`：`ok=true`，默认模型 `doubao-seedance-2-0-mini-260615`，模型列表可访问。
+- `PEXELS_API_KEY`、`PIXABAY_API_KEY` 当前未配置；程序会显示待申请并允许手动素材导入。
+- 新 MCP 只暴露：`seedream_health_check`、`seedream_generate_image`、`seedance_health_check`、`seedance_create_video_task`、`seedance_get_video_task`、`seedance_wait_and_download`。
+
+### 自动化验证
+
+- `python -m pytest -q`：12 passed。
+- 测试覆盖：脚本模板、Pexels/Pixabay 解析、生成成本估算、发布包文件、SRT、API 创建与 dry-run、即梦工具白名单、无 Kling 导入。
+- `start.bat`：双击启动成功，首页、静态资源、健康检查、项目列表、线索列表均返回 200。
+- FFmpeg 冒烟渲染：1080×1920、30fps、30.00 秒、H.264 + AAC，字幕和封面生成成功。
+- 未调用付费图片/视频生成；未对外发布、未上传抖音/小红书、未保存平台 Cookie。
+
+### 产物
+
+- `projects/novel_promo_factory/app/`：FastAPI 本地控制台与业务逻辑。
+- `projects/novel_promo_factory/jimeng_mcp/server.py`：即梦-only MCP。
+- `projects/novel_promo_factory/tests/`：12 个自动化测试。
+- `projects/novel_promo_factory/start.bat`：一键启动。

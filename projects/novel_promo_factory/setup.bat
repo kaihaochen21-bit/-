@@ -1,0 +1,20 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+if not exist ".venv\Scripts\python.exe" (
+  where py >nul 2>nul
+  if %errorlevel%==0 (
+    py -3 -m venv .venv
+  ) else (
+    python -m venv .venv
+  )
+)
+".venv\Scripts\python.exe" -m pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
+if errorlevel 1 (
+  echo Dependency installation failed.
+  pause
+  exit /b 1
+)
+type nul > ".venv\.deps_ok"
+echo Setup complete. Double-click start.bat to launch.
+pause
