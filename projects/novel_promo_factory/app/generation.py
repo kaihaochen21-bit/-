@@ -83,6 +83,8 @@ async def confirm_generation(project_id: str, *, confirmed: bool = False) -> dic
     project = db.get_project(project_id)
     if not project:
         raise GenerationError("项目不存在")
+    if project.get("decision") == "pending":
+        raise GenerationError("请先在项目审核区接受这个项目，再调用付费生成")
     if project.get("rights_status") not in {"owned", "authorized"}:
         raise GenerationError("请先确认文本为自有或已授权")
     estimate = estimate_project(project)

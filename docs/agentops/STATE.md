@@ -106,3 +106,11 @@
 - Pexels/Pixabay 仍需申请免费 Key；未配置前支持 `assets/manual/` 手动素材。
 - 未执行付费生成、未对外发布、未保存平台 Cookie。
 - 分支：`codex/TASK-016-novel-promo-factory`
+
+## TASK-017 当前结果
+
+- 已加入小说候选池、自动选书、手动选书和人工审批流程。
+- 自动项目创建后为 `pending_approval`；接受前禁止付费生成。
+- 拒绝项目后可自动选择下一条候选。
+- 测试：14 passed；API 流程联调通过。
+- 分支：`codex/TASK-016-novel-promo-factory`

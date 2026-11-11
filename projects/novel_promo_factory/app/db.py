@@ -23,6 +23,12 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
+    columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in columns:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
+
 def init_db() -> None:
     with connect() as conn:
         conn.executescript(
@@ -44,6 +50,9 @@ def init_db() -> None:
                 package_dir TEXT NOT NULL DEFAULT '',
                 estimated_cost_cny REAL NOT NULL DEFAULT 0,
                 actual_cost_cny REAL NOT NULL DEFAULT 0,
+                novel_id TEXT NOT NULL DEFAULT '',
+                decision TEXT NOT NULL DEFAULT 'approved',
+                rejection_reason TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
@@ -114,8 +123,26 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE SET NULL
             );
+
+            CREATE TABLE IF NOT EXISTS novel_candidates (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                genre TEXT NOT NULL DEFAULT '',
+                source_text TEXT NOT NULL DEFAULT '',
+                rights_status TEXT NOT NULL DEFAULT 'unconfirmed',
+                source_url TEXT NOT NULL DEFAULT '',
+                tags TEXT NOT NULL DEFAULT '',
+                priority INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'available',
+                used_count INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
             """
         )
+        _ensure_column(conn, "projects", "novel_id", "TEXT NOT NULL DEFAULT ''")
+        _ensure_column(conn, "projects", "decision", "TEXT NOT NULL DEFAULT 'approved'")
+        _ensure_column(conn, "projects", "rejection_reason", "TEXT NOT NULL DEFAULT ''")
 
 
 def _dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
@@ -139,6 +166,9 @@ def create_project(
     template: str = "story_showreel",
     target_duration: int = 30,
     budget_limit_cny: float = 20,
+    novel_id: str = "",
+    decision: str = "approved",
+    status: str = "draft",
 ) -> dict[str, Any]:
     project_id = uuid.uuid4().hex[:12]
     folder = config.content_dir() / project_id
@@ -146,8 +176,8 @@ def create_project(
     stamp = now_iso()
     with connect() as conn:
         conn.execute(
-            "INSERT INTO projects (id,title,genre,source_text,rights_status,template,target_duration,budget_limit_cny,status,folder,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-            (project_id, title.strip(), genre.strip(), source_text.strip(), rights_status, template, target_duration, budget_limit_cny, "draft", str(folder), stamp, stamp),
+            "INSERT INTO projects (id,title,genre,source_text,rights_status,template,target_duration,budget_limit_cny,status,folder,novel_id,decision,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (project_id, title.strip(), genre.strip(), source_text.strip(), rights_status, template, target_duration, budget_limit_cny, status, str(folder), novel_id, decision, stamp, stamp),
         )
     return get_project(project_id) or {}
 
@@ -174,6 +204,7 @@ def update_project(project_id: str, **fields: Any) -> dict[str, Any] | None:
         "title", "genre", "source_text", "rights_status", "template",
         "target_duration", "budget_limit_cny", "status", "script", "shots",
         "video_path", "package_dir", "estimated_cost_cny", "actual_cost_cny",
+        "novel_id", "decision", "rejection_reason",
     }
     values: dict[str, Any] = {}
     for key, value in fields.items():
@@ -299,6 +330,69 @@ def list_leads() -> list[dict[str, Any]]:
     return [_dict(row) for row in rows if row is not None]
 
 
+def add_novel_candidate(
+    title: str,
+    genre: str,
+    source_text: str,
+    rights_status: str = "unconfirmed",
+    source_url: str = "",
+    tags: str = "",
+    priority: int = 0,
+) -> dict[str, Any]:
+    candidate_id = uuid.uuid4().hex[:12]
+    stamp = now_iso()
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO novel_candidates (id,title,genre,source_text,rights_status,source_url,tags,priority,status,used_count,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (candidate_id, title.strip(), genre.strip(), source_text.strip(), rights_status, source_url.strip(), tags.strip(), int(priority), "available", 0, stamp, stamp),
+        )
+    return get_novel_candidate(candidate_id) or {}
+
+
+def get_novel_candidate(candidate_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM novel_candidates WHERE id=?", (candidate_id,)).fetchone()
+    return _dict(row)
+
+
+def list_novel_candidates(status: str | None = None) -> list[dict[str, Any]]:
+    with connect() as conn:
+        if status:
+            rows = conn.execute("SELECT * FROM novel_candidates WHERE status=? ORDER BY priority DESC, id ASC", (status,)).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM novel_candidates ORDER BY status ASC, priority DESC, id ASC").fetchall()
+    return [_dict(row) for row in rows if row is not None]
+
+
+def update_novel_candidate(candidate_id: str, **fields: Any) -> dict[str, Any] | None:
+    allowed = {"title", "genre", "source_text", "rights_status", "source_url", "tags", "priority", "status", "used_count"}
+    values = {key: value for key, value in fields.items() if key in allowed}
+    if values:
+        values["updated_at"] = now_iso()
+        assignments = ", ".join(f"{key}=?" for key in values)
+        with connect() as conn:
+            conn.execute(f"UPDATE novel_candidates SET {assignments} WHERE id=?", (*values.values(), candidate_id))
+    return get_novel_candidate(candidate_id)
+
+
+def select_next_novel_candidate(*, genre: str = "", keywords: str = "") -> dict[str, Any] | None:
+    candidates = [item for item in list_novel_candidates("available") if item.get("rights_status") in {"owned", "authorized"}]
+    if not candidates:
+        return None
+    genre = genre.strip()
+    keyword_list = [piece.strip().lower() for piece in keywords.replace("，", ",").split(",") if piece.strip()]
+
+    def score(item: dict[str, Any]) -> int:
+        value = int(item.get("priority") or 0) * 10 - int(item.get("used_count") or 0) * 20
+        if genre and item.get("genre") == genre:
+            value += 100
+        haystack = f"{item.get('title', '')} {item.get('genre', '')} {item.get('tags', '')} {item.get('source_text', '')}".lower()
+        value += sum(25 for keyword in keyword_list if keyword in haystack)
+        return value
+
+    return max(candidates, key=score)
+
+
 def dashboard() -> dict[str, Any]:
     with connect() as conn:
         projects = conn.execute("SELECT COUNT(*) AS n FROM projects").fetchone()["n"]
@@ -306,8 +400,10 @@ def dashboard() -> dict[str, Any]:
         published = conn.execute("SELECT COUNT(*) AS n FROM posts WHERE status='published'").fetchone()["n"]
         leads = conn.execute("SELECT COUNT(*) AS n FROM leads").fetchone()["n"]
         qualified = conn.execute("SELECT COUNT(*) AS n FROM leads WHERE qualified=1").fetchone()["n"]
+        novels = conn.execute("SELECT COUNT(*) AS n FROM novel_candidates WHERE status='available'").fetchone()["n"]
     return {
         "projects": projects,
+        "available_novels": novels,
         "posts": posts,
         "published": published,
         "leads": leads,

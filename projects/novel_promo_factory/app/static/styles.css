@@ -107,3 +107,11 @@ td { color: #d1d8e7; line-height: 1.45; }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.bad { border-color: #74333d; background: #2a171c; color: #ffd0d5; }
 @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .topbar { align-items: flex-start; flex-direction: column; } .pills { justify-content: flex-start; } }
+
+.auto-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 14px; }
+.novel-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 320px; overflow: auto; }
+.novel-row { border: 1px solid #293141; background: #10151f; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.novel-row strong { display: block; font-size: 13px; margin-bottom: 4px; }
+.novel-row small { color: var(--muted); font-size: 11px; }
+.novel-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 1180px) { .auto-row { grid-template-columns: 1fr; } }

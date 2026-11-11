@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-const state = { projects: [], current: null, manual: [], health: null };
+const state = { projects: [], current: null, manual: [], novels: [], health: null };
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -34,7 +34,7 @@ function fmtDate(value) {
   try { return new Date(value).toLocaleString("zh-CN", { hour12: false }); } catch { return value; }
 }
 function statusLabel(status) {
-  return ({ draft: "草稿", script_ready: "脚本完成", cost_ready: "成本已估算", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
+  return ({ draft: "草稿", pending_approval: "待审核", approved: "已接受", rejected: "已拒绝", script_ready: "脚本完成", cost_ready: "成本已估算", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
 }
 function badgeClass(kind) {
   return `tag ${esc(kind)}`;
@@ -68,7 +68,7 @@ async function refreshProjects() {
   $("#projectList").innerHTML = state.projects.map((project) => `
     <div class="project-item ${state.current?.id === project.id ? "active" : ""}" data-id="${esc(project.id)}">
       <strong>${esc(project.title)}</strong>
-      <span>${esc(statusLabel(project.status))} · ${esc(project.genre || "未分类")} · ${esc(fmtDate(project.updated_at))}</span>
+      <span>${esc(statusLabel(project.status))} · ${esc(project.genre || "未分类")}${project.decision === "pending" ? " · 待你审核" : ""} · ${esc(fmtDate(project.updated_at))}</span>
     </div>
   `).join("");
   document.querySelectorAll(".project-item").forEach((node) => {
@@ -79,7 +79,7 @@ async function refreshProjects() {
 async function refreshDashboard() {
   const data = await api("/api/dashboard");
   $("#dashboard").innerHTML = [
-    ["项目", data.projects], ["发布", data.published], ["线索", data.leads], ["有效", data.qualified_leads], ["本月", `¥${Number(data.month_spend_cny || 0).toFixed(2)}`],
+    ["项目", data.projects], ["可用小说", data.available_novels], ["发布", data.published], ["线索", data.leads], ["有效", data.qualified_leads], ["本月", `¥${Number(data.month_spend_cny || 0).toFixed(2)}`],
   ].map(([label, value]) => `<div class="stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`).join("");
 }
 
@@ -100,6 +100,58 @@ async function refreshManual() {
   });
 }
 
+async function refreshNovels() {
+  state.novels = await api("/api/novels");
+  if (!state.novels.length) {
+    $("#novelList").className = "novel-list empty";
+    $("#novelList").textContent = "还没有候选小说。请先添加候选，或调整自动选书条件。";
+    return;
+  }
+  $("#novelList").className = "novel-list";
+  $("#novelList").innerHTML = state.novels.map((item) => {
+    const status = ({ available: "可用", in_review: "待审核", used: "已使用", rejected: "已拒绝" })[item.status] || item.status;
+    const disabled = item.status !== "available";
+    return `<div class="novel-row">
+      <div><strong>${esc(item.title)}</strong><small>${esc(item.genre || "未分类")} · ${esc(status)} · ${esc(item.tags || "无标签")} · 优先级 ${esc(item.priority)}</small></div>
+      <div class="novel-actions"><button class="small" data-novel="${esc(item.id)}" ${disabled ? "disabled" : ""}>用这条创建项目</button></div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("[data-novel]").forEach((button) => {
+    button.addEventListener("click", () => createProjectFromNovel(button.dataset.novel));
+  });
+}
+
+async function createProjectFromNovel(candidateId) {
+  try {
+    const project = await api(`/api/novels/${candidateId}/project`, {
+      method: "POST",
+      body: JSON.stringify({ genre: "", keywords: "", target_duration: 30, budget_limit_cny: 20 }),
+    });
+    state.current = project;
+    await Promise.all([refreshNovels(), refreshProjects()]);
+    await selectProject(project.id);
+    toast("已创建待审核项目");
+  } catch (error) { toast(error.message, true); }
+}
+
+async function autoCreateProject() {
+  try {
+    const project = await api("/api/projects/auto", {
+      method: "POST",
+      body: JSON.stringify({
+        genre: $("#autoGenre").value.trim(),
+        keywords: $("#autoKeywords").value.trim(),
+        target_duration: 30,
+        budget_limit_cny: 20,
+      }),
+    });
+    state.current = project;
+    await Promise.all([refreshNovels(), refreshProjects()]);
+    await selectProject(project.id);
+    toast("已自动选一本并创建待审核项目");
+  } catch (error) { toast(error.message, true); }
+}
+
 async function refreshLeads() {
   const leads = await api("/api/leads");
   if (!leads.length) { $("#leadList").innerHTML = `<p class="muted">还没有客户线索。</p>`; return; }
@@ -113,7 +165,7 @@ async function refreshLeads() {
 }
 
 async function loadAll() {
-  await Promise.all([refreshHealth(), refreshProjects(), refreshDashboard(), refreshManual(), refreshLeads()]);
+  await Promise.all([refreshHealth(), refreshProjects(), refreshDashboard(), refreshManual(), refreshLeads(), refreshNovels()]);
   if (state.current) await selectProject(state.current.id);
 }
 
@@ -151,6 +203,18 @@ function renderDetail() {
   const estimate = Number(project.estimated_cost_cny || 0);
   $("#costBox").className = "notice " + (estimate ? "ok" : "");
   $("#costBox").textContent = estimate ? `预计成本 ¥${estimate.toFixed(2)}，实际已记录 ¥${Number(project.actual_cost_cny || 0).toFixed(2)}。` : "还没有估算成本。点击“估算成本”后再决定是否付费生成。";
+
+  const approval = $("#approvalBox");
+  if (project.decision === "pending") {
+    approval.classList.remove("hidden");
+    approval.className = "notice";
+    approval.innerHTML = `<strong>这个项目等待你的决定。</strong><p>程序已经自动选好小说并生成脚本/分镜，但还没有调用付费 API。接受后才会进入素材和生成流程。</p><div class="publish-actions"><button class="small" data-decision="approve">接受这个项目</button><button class="small" data-decision="reject">拒绝并换一条</button></div>`;
+    document.querySelectorAll("[data-decision]").forEach((button) => {
+      button.addEventListener("click", () => decideProject(button.dataset.decision));
+    });
+  } else {
+    approval.classList.add("hidden");
+  }
 
   renderAssets(project);
   renderPosts(project);
@@ -225,6 +289,39 @@ async function attachManual(filename) {
   } catch (error) { toast(error.message, true); }
 }
 
+async function decideProject(decision) {
+  if (!state.current) return;
+  let reason = "";
+  if (decision === "reject") {
+    reason = prompt("拒绝原因（可留空）：", "") || "";
+  }
+  try {
+    const result = await api(`/api/projects/${state.current.id}/decision`, {
+      method: "POST",
+      body: JSON.stringify({
+        decision,
+        reason,
+        next_candidate: decision === "reject",
+        genre: $("#autoGenre").value.trim(),
+        keywords: $("#autoKeywords").value.trim(),
+        target_duration: 30,
+        budget_limit_cny: 20,
+      }),
+    });
+    await refreshNovels();
+    if (result.next_project) {
+      state.current = result.next_project;
+      await Promise.all([refreshProjects(), refreshNovels()]);
+      await selectProject(result.next_project.id);
+      toast("已拒绝并切换到下一条候选");
+    } else {
+      await Promise.all([refreshProjects(), refreshNovels()]);
+      await selectProject(state.current.id);
+      toast(result.decision === "approved" ? "项目已接受，可以继续搜索素材和生成" : "项目已拒绝，没有更多可用候选");
+    }
+  } catch (error) { toast(error.message, true); }
+}
+
 async function runAction(action) {
   if (!state.current) return toast("请先选择项目", true);
   const id = state.current.id;
@@ -249,6 +346,19 @@ async function runAction(action) {
     toast(error.message, true);
   }
 }
+
+$("#novelForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(event.target);
+  try {
+    await api("/api/novels", { method: "POST", body: JSON.stringify(Object.fromEntries(form.entries())) });
+    event.target.reset();
+    await refreshNovels();
+    toast("候选小说已添加");
+  } catch (error) { toast(error.message, true); }
+});
+$("#refreshNovels").addEventListener("click", refreshNovels);
+$("#autoProjectBtn").addEventListener("click", autoCreateProject);
 
 $("#createForm").addEventListener("submit", async (event) => {
   event.preventDefault();

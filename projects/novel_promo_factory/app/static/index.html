@@ -60,6 +60,8 @@
           <span id="detailStatus" class="badge"></span>
         </div>
 
+        <div id="approvalBox" class="notice hidden"></div>
+
         <div class="actions">
           <button data-action="auto-script">生成脚本和分镜</button>
           <button data-action="asset-search">搜索免费素材</button>
@@ -99,6 +101,30 @@
         <h2>从一个小说片段开始</h2>
         <p>创建项目后，按“生成脚本 → 搜索素材 → 估算成本 → 确认生成 → 渲染 → 打包”的顺序操作。</p>
         <p class="muted">程序只负责内容生产与发布包，不会登录或自动发布到抖音/小红书。</p>
+      </section>
+
+      <section class="card">
+        <div class="section-title"><h2>小说候选池</h2><button id="refreshNovels" class="ghost small">刷新</button></div>
+        <p class="muted">自动选择只从你录入的候选池里挑，不会联网抓取小说平台内容。候选必须标记为自有或已授权。</p>
+        <form id="novelForm" class="stack compact">
+          <div class="row">
+            <label>标题<input name="title" required placeholder="候选小说标题"></label>
+            <label>类型<input name="genre" placeholder="甜宠 / 悬疑 / 古风"></label>
+          </div>
+          <label>小说文本<textarea name="source_text" required rows="4" placeholder="粘贴候选小说片段"></textarea></label>
+          <div class="row">
+            <label>授权状态<select name="rights_status"><option value="owned">自有</option><option value="authorized">已授权</option><option value="unconfirmed">未确认</option></select></label>
+            <label>优先级<input name="priority" type="number" value="0" min="-100" max="100"></label>
+          </div>
+          <label>标签/关键词<input name="tags" placeholder="例如：复仇, 反转, 女强"></label>
+          <button type="submit">添加到候选池</button>
+        </form>
+        <div class="auto-row">
+          <label>自动选书类型<input id="autoGenre" placeholder="可留空"></label>
+          <label>自动选书关键词<input id="autoKeywords" placeholder="例如：反转, 复仇"></label>
+          <button id="autoProjectBtn" class="primary">自动选一本并创建待审项目</button>
+        </div>
+        <div id="novelList" class="novel-list empty">还没有候选小说</div>
       </section>
 
       <section class="card">

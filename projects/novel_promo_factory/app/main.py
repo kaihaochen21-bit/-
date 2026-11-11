@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, generation, media, package, stock, templates
+from . import config, db, generation, media, novel, package, stock, templates
 from .jimeng_client import JimengMCPClient
 
 @asynccontextmanager
@@ -39,6 +39,33 @@ class ProjectCreate(BaseModel):
 class ScriptSave(BaseModel):
     script: dict[str, Any]
     shots: list[dict[str, Any]] | None = None
+
+
+class NovelCandidateCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    genre: str = Field(default="", max_length=30)
+    source_text: str = Field(min_length=1)
+    rights_status: Literal["unconfirmed", "owned", "authorized"] = "owned"
+    source_url: str = ""
+    tags: str = ""
+    priority: int = Field(default=0, ge=-100, le=100)
+
+
+class AutoProjectCreate(BaseModel):
+    genre: str = ""
+    keywords: str = ""
+    target_duration: int = Field(default=30, ge=15, le=60)
+    budget_limit_cny: float = Field(default=20, ge=1, le=100)
+
+
+class ProjectDecision(BaseModel):
+    decision: Literal["approve", "reject"]
+    reason: str = ""
+    next_candidate: bool = False
+    genre: str = ""
+    keywords: str = ""
+    target_duration: int = Field(default=30, ge=15, le=60)
+    budget_limit_cny: float = Field(default=20, ge=1, le=100)
 
 
 class ConfirmGenerate(BaseModel):
@@ -128,6 +155,66 @@ def create_project(payload: ProjectCreate) -> dict[str, Any]:
         target_duration=payload.target_duration,
         budget_limit_cny=payload.budget_limit_cny,
     )
+
+
+@app.get("/api/novels")
+def list_novels(status: str | None = None) -> list[dict[str, Any]]:
+    return db.list_novel_candidates(status)
+
+
+@app.post("/api/novels")
+def create_novel(payload: NovelCandidateCreate) -> dict[str, Any]:
+    return db.add_novel_candidate(
+        title=payload.title,
+        genre=payload.genre,
+        source_text=payload.source_text,
+        rights_status=payload.rights_status,
+        source_url=payload.source_url,
+        tags=payload.tags,
+        priority=payload.priority,
+    )
+
+
+@app.post("/api/novels/{candidate_id}/project")
+def create_project_from_novel(candidate_id: str, payload: AutoProjectCreate) -> dict[str, Any]:
+    try:
+        return novel.create_project_from_candidate(
+            candidate_id,
+            target_duration=payload.target_duration,
+            budget_limit_cny=payload.budget_limit_cny,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/auto")
+def auto_project(payload: AutoProjectCreate) -> dict[str, Any]:
+    try:
+        return novel.auto_create_project(
+            genre=payload.genre,
+            keywords=payload.keywords,
+            target_duration=payload.target_duration,
+            budget_limit_cny=payload.budget_limit_cny,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/decision")
+def decide_project(project_id: str, payload: ProjectDecision) -> dict[str, Any]:
+    try:
+        return novel.decide_project(
+            project_id,
+            decision=payload.decision,
+            reason=payload.reason,
+            next_candidate=payload.next_candidate,
+            genre=payload.genre,
+            keywords=payload.keywords,
+            target_duration=payload.target_duration,
+            budget_limit_cny=payload.budget_limit_cny,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/projects/{project_id}")

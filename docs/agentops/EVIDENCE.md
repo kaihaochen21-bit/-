@@ -222,3 +222,20 @@
 - `projects/novel_promo_factory/jimeng_mcp/server.py`：即梦-only MCP。
 - `projects/novel_promo_factory/tests/`：12 个自动化测试。
 - `projects/novel_promo_factory/start.bat`：一键启动。
+
+## TASK-017 小说候选池与自动选书（2026-11-11）
+
+### 已实现
+
+- `novel_candidates` 数据表，字段包括标题、类型、正文、授权状态、标签、优先级、状态和使用次数。
+- 手动候选选择：通过“用这条创建项目”生成待审核项目。
+- 自动候选选择：按类型、关键词、优先级、使用次数评分。
+- 自动创建项目后先生成脚本/分镜，状态为 `pending_approval`，`decision=pending`。
+- 用户可接受项目，或拒绝并自动创建下一条候选项目。
+- 付费生成门控：`decision=pending` 时拒绝调用 Seedream/Seedance。
+
+### 验证
+
+- `pytest -q`：14 passed。
+- API 联调：新增两个候选 -> 自动创建待审项目 -> 拒绝并切换到第二条 -> 接受第二条 -> dry-run 成功。
+- 未联网抓取小说平台，未执行付费生成或对外发布。
