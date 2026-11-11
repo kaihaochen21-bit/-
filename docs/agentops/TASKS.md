@@ -166,3 +166,19 @@
   - 接受前调用付费生成会被阻止
   - 不联网抓取小说平台内容
 - 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-017 记录
+
+## TASK-018：批量推荐项目与 Pixabay 图片素材回退
+
+- 状态：IMPLEMENTED / VERIFIED_LOCAL
+- 负责人：orchestrator
+- 依赖：TASK-017、Pixabay API Key
+- 产物：
+  - `/api/projects/auto-batch`：批量创建 3–5 个待审项目并搜集素材
+  - Pixabay 图片搜索与竖版图片候选下载
+  - 素材错误日志 API Key 脱敏
+- 验收：
+  - 批量项目默认停在 `pending_approval`
+  - 每个项目生成 8 个分镜并搜集 3 个候选图片
+  - 批量按钮不调用付费即梦 API
+  - 素材错误不会在日志中暴露 `key=`
+- 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-018 记录

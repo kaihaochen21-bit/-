@@ -124,6 +124,11 @@
           <label>自动选书关键词<input id="autoKeywords" placeholder="例如：反转, 复仇"></label>
           <button id="autoProjectBtn" class="primary">自动选一本并创建待审项目</button>
         </div>
+        <div class="auto-row">
+          <label>批量数量<input id="autoCount" type="number" value="5" min="3" max="5"></label>
+          <span class="muted">批量项目会自动搜集 1 个候选图片/镜头，并停在待审核。</span>
+          <button id="autoBatchBtn" class="primary">批量生成待审项目并搜集素材</button>
+        </div>
         <div id="novelList" class="novel-list empty">还没有候选小说</div>
       </section>
 

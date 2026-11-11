@@ -152,6 +152,30 @@ async function autoCreateProject() {
   } catch (error) { toast(error.message, true); }
 }
 
+async function autoCreateBatch() {
+  try {
+    const result = await api("/api/projects/auto-batch", {
+      method: "POST",
+      body: JSON.stringify({
+        count: Number($("#autoCount").value || 5),
+        genre: $("#autoGenre").value.trim(),
+        keywords: $("#autoKeywords").value.trim(),
+        target_duration: 30,
+        budget_limit_cny: 20,
+      }),
+    });
+    if (!result.projects?.length) throw new Error("没有创建出项目，请检查候选池");
+    setOutput(result);
+    state.current = result.projects[0];
+    await Promise.all([refreshNovels(), refreshProjects()]);
+    await selectProject(result.projects[0].id);
+    toast(`已生成 ${result.projects.length} 个待审项目并搜集素材`);
+  } catch (error) {
+    setOutput({ ok: false, error: error.message });
+    toast(error.message, true);
+  }
+}
+
 async function refreshLeads() {
   const leads = await api("/api/leads");
   if (!leads.length) { $("#leadList").innerHTML = `<p class="muted">还没有客户线索。</p>`; return; }
@@ -359,6 +383,7 @@ $("#novelForm").addEventListener("submit", async (event) => {
 });
 $("#refreshNovels").addEventListener("click", refreshNovels);
 $("#autoProjectBtn").addEventListener("click", autoCreateProject);
+$("#autoBatchBtn").addEventListener("click", autoCreateBatch);
 
 $("#createForm").addEventListener("submit", async (event) => {
   event.preventDefault();

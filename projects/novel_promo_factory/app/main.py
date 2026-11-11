@@ -58,6 +58,14 @@ class AutoProjectCreate(BaseModel):
     budget_limit_cny: float = Field(default=20, ge=1, le=100)
 
 
+class AutoBatchCreate(BaseModel):
+    count: int = Field(default=5, ge=3, le=5)
+    genre: str = ""
+    keywords: str = ""
+    target_duration: int = Field(default=30, ge=15, le=60)
+    budget_limit_cny: float = Field(default=20, ge=1, le=100)
+
+
 class ProjectDecision(BaseModel):
     decision: Literal["approve", "reject"]
     reason: str = ""
@@ -198,6 +206,28 @@ def auto_project(payload: AutoProjectCreate) -> dict[str, Any]:
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/auto-batch")
+async def auto_batch(payload: AutoBatchCreate) -> dict[str, Any]:
+    created: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    service = stock.StockService()
+    for _ in range(payload.count):
+        try:
+            project = novel.auto_create_project(
+                genre=payload.genre,
+                keywords=payload.keywords,
+                target_duration=payload.target_duration,
+                budget_limit_cny=payload.budget_limit_cny,
+            )
+        except Exception as exc:
+            warnings.append(str(exc))
+            break
+        search = await service.search_images_for_project(project["id"], project.get("shots") or [], per_shot=1)
+        warnings.extend(search.get("warnings") or [])
+        created.append(db.get_project(project["id"]) or project)
+    return {"projects": created, "warnings": warnings}
 
 
 @app.post("/api/projects/{project_id}/decision")

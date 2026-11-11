@@ -43,3 +43,20 @@ def test_manual_candidate_project_and_pending_gate(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "ark_ready", lambda: True)
     with pytest.raises(generation.GenerationError, match="接受这个项目"):
         asyncio.run(generation.confirm_generation(project["id"], confirmed=True))
+
+def test_auto_batch_api(tmp_path, monkeypatch):
+    setup_db(tmp_path, monkeypatch)
+    for index in range(3):
+        db.add_novel_candidate(f"批量候选{index}", "悬疑", f"候选正文{index}。她推开门。", rights_status="owned", priority=10-index)
+    async def fake_search(self, project_id, shots, *, per_shot=1):
+        return {"downloaded": 0, "warnings": []}
+    from app import stock
+    monkeypatch.setattr(stock.StockService, "search_images_for_project", fake_search)
+    from fastapi.testclient import TestClient
+    from app.main import app
+    with TestClient(app) as client:
+        response = client.post("/api/projects/auto-batch", json={"count": 3, "genre": "悬疑", "target_duration": 30, "budget_limit_cny": 20})
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["projects"]) == 3
+        assert all(project["decision"] == "pending" for project in data["projects"])
