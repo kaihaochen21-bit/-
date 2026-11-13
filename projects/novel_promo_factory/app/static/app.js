@@ -1,8 +1,12 @@
 const $ = (selector) => document.querySelector(selector);
-const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null };
+const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null, radar: null };
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+function clipText(value, limit = 300) {
+  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+  return text.length > limit ? `${text.slice(0, limit)}…` : text;
 }
 function setOutput(value) {
   const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -50,8 +54,9 @@ async function refreshHealth() {
       ["Seedance", data.jimeng?.seedance?.ok, data.jimeng?.seedance?.default_model || data.seedance_model],
       ["Pexels", data.pexels_configured, data.pexels_configured ? "已配置" : "待申请"],
       ["Pixabay", data.pixabay_configured, data.pixabay_configured ? "已配置" : "待申请"],
+      ["雷达", (data.radar?.unread || 0) >= 0, `${Number(data.radar?.unread || 0)} 未读`],
     ];
-    $("#healthPills").innerHTML = items.map(([label, ok, text]) => `<span class="pill ${ok ? "ok" : "bad"}">${esc(label)} · ${esc(text)}</span>`).join("");
+    $("#healthPills").innerHTML = items.map(([label, ok, text]) => `<span class="pill ${ok ? "ok" : "bad"}" data-health="${esc(label)}">${esc(label)} · ${esc(text)}</span>`).join("");
   } catch (error) {
     $("#healthPills").innerHTML = `<span class="pill bad">健康检查失败 · ${esc(error.message)}</span>`;
   }
@@ -188,8 +193,140 @@ async function refreshLeads() {
   `).join("");
 }
 
+function radarStatusLabel(status) {
+  return ({ unread: "未读", saved: "已收藏", trying: "试用中", tried: "已试", ignored: "已忽略" })[status] || status || "未读";
+}
+
+function radarGrowthLabel(item) {
+  const scores = item.scores || {};
+  if (scores.growth_baseline) return "增长基线建立中";
+  const delta = scores.star_delta_24h;
+  if (delta === null || delta === undefined) return "增长待确认";
+  return `24h Star ${Number(delta) >= 0 ? "+" : ""}${Number(delta)}`;
+}
+
+function renderRadarStats(stats) {
+  const values = [
+    ["今日新增", stats.new_today],
+    ["优先项目", stats.priority],
+    ["未读", stats.unread],
+    ["试用中", stats.trying],
+    ["仓库", stats.repos],
+    ["官方动态", stats.updates],
+  ];
+  $("#radarStats").innerHTML = values.map(([label, value]) => `<div class="stat"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`).join("");
+  const unread = Number(stats.unread || 0);
+  const badge = $("#radarUnreadBadge");
+  badge.textContent = unread > 99 ? "99+" : String(unread);
+  badge.classList.toggle("hidden", unread === 0);
+  const healthPill = document.querySelector('[data-health="雷达"]');
+  if (healthPill) healthPill.textContent = `雷达 · ${unread} 未读`;
+}
+
+function renderRadarItems(items) {
+  if (!items.length) {
+    $("#radarList").className = "radar-list empty";
+    $("#radarList").textContent = "当前筛选条件下没有项目。可以降低评分或点击“立即扫描”。";
+    return;
+  }
+  $("#radarList").className = "radar-list";
+  $("#radarList").innerHTML = items.map((item) => {
+    const scores = item.scores || {};
+    const tags = (item.tags || []).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("");
+    const risks = (item.risk_flags || []).map((risk) => `<span class="tag risk-tag">${esc(risk)}</span>`).join("");
+    const stars = item.metrics?.stars !== undefined ? `Star ${Number(item.metrics.stars).toLocaleString("zh-CN")}` : "";
+    const type = ({ repo: "仓库", news: "新闻", update: "更新" })[item.item_type] || item.item_type;
+    const options = ["unread", "saved", "trying", "tried", "ignored"].map((status) => `<option value="${status}" ${item.status === status ? "selected" : ""}>${radarStatusLabel(status)}</option>`).join("");
+    return `<article class="radar-item ${Number(item.total_score || 0) >= 75 ? "priority" : ""}">
+      <div class="radar-item-head">
+        <div>
+          <h3 class="radar-item-title"><a href="${esc(item.url)}" target="_blank" rel="noreferrer">${esc(item.title)}</a></h3>
+          <div class="radar-item-meta"><span class="tag">${esc(type)}</span>${tags}${risks}<span>${esc(stars)}</span><span>${esc(radarGrowthLabel(item))}</span><span>许可证：${esc(item.license_name || "未明确")}</span></div>
+        </div>
+        <div class="radar-score">${Number(item.total_score || 0).toFixed(0)}<small>总分</small></div>
+      </div>
+      <p class="radar-item-summary">${esc(clipText(item.summary || "暂无摘要", 320))}</p>
+      <div class="radar-item-actions">
+        <a class="button-link" href="${esc(item.url)}" target="_blank" rel="noreferrer">打开原链接</a>
+        <select class="radar-status" data-radar-id="${Number(item.id)}" aria-label="试用状态">${options}</select>
+        <span class="muted">更新于 ${esc(fmtDate(item.last_seen_at))}</span>
+      </div>
+    </article>`;
+  }).join("");
+  document.querySelectorAll(".radar-status").forEach((select) => {
+    select.addEventListener("change", () => updateRadarStatus(select.dataset.radarId, select.value));
+  });
+}
+
+function renderRadarUpdates(updates) {
+  if (!updates?.length) {
+    $("#radarUpdates").className = "radar-updates empty";
+    $("#radarUpdates").textContent = "暂无符合相关性的官方动态。";
+    return;
+  }
+  $("#radarUpdates").className = "radar-updates";
+  $("#radarUpdates").innerHTML = updates.slice(0, 12).map((item) => `
+    <article class="update-card">
+      <a href="${esc(item.url)}" target="_blank" rel="noreferrer">${esc(item.title)}</a>
+      <p>${esc(clipText(item.summary || "暂无摘要", 320))}</p>
+      <p class="muted">${esc(item.source_name)} · ${esc(fmtDate(item.published_at || item.last_seen_at))}</p>
+    </article>
+  `).join("");
+}
+
+async function refreshRadar() {
+  const minScore = $("#radarMinScore")?.value || "60";
+  const itemType = $("#radarTypeFilter")?.value || "";
+  const status = $("#radarStatusFilter")?.value || "";
+  const params = new URLSearchParams({ min_score: minScore, limit: "300" });
+  if (itemType) params.set("item_type", itemType);
+  if (status) params.set("status", status);
+  const data = await api(`/api/radar/dashboard?${params.toString()}`);
+  state.radar = data;
+  renderRadarStats(data.stats || {});
+  renderRadarItems(data.items || []);
+  renderRadarUpdates(data.updates || []);
+  const errors = data.last_errors || [];
+  const box = $("#radarErrors");
+  box.classList.toggle("hidden", !errors.length);
+  box.textContent = errors.length ? `最近扫描有 ${errors.length} 个数据源异常：${errors.slice(0, 3).join("；")}` : "";
+}
+
+async function updateRadarStatus(itemId, status) {
+  try {
+    await api(`/api/radar/items/${itemId}/status`, { method: "POST", body: JSON.stringify({ status }) });
+    await refreshRadar();
+    toast(`已标记为“${radarStatusLabel(status)}”`);
+  } catch (error) { toast(error.message, true); }
+}
+
+async function scanRadar() {
+  const button = $("#scanRadarBtn");
+  button.disabled = true;
+  button.textContent = "扫描中…";
+  try {
+    const result = await api("/api/radar/scan", { method: "POST" });
+    await refreshRadar();
+    toast(`扫描完成：发现 ${result.items_found || 0} 项，新增 ${result.new_items || 0} 项${result.errors?.length ? `，${result.errors.length} 个源异常` : ""}`, Boolean(result.errors?.length));
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "立即扫描";
+  }
+}
+
+function switchView(view) {
+  const radar = view === "radar";
+  $("#factoryView").classList.toggle("hidden", radar);
+  $("#radarView").classList.toggle("hidden", !radar);
+  document.querySelectorAll(".view-tab").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+  if (radar) refreshRadar().catch((error) => toast(error.message, true));
+  history.replaceState(null, "", radar ? "#radar" : location.pathname);
+}
+
 async function loadAll() {
-  await Promise.all([refreshHealth(), refreshProjects(), refreshDashboard(), refreshManual(), refreshLeads(), refreshNovels()]);
+  await Promise.all([refreshHealth(), refreshProjects(), refreshDashboard(), refreshManual(), refreshLeads(), refreshNovels(), refreshRadar()]);
   if (state.current) await selectProject(state.current.id);
 }
 
@@ -467,3 +604,12 @@ $("#leadForm").addEventListener("submit", async (event) => {
 });
 
 loadAll().catch((error) => toast(error.message, true));
+document.querySelectorAll(".view-tab").forEach((button) => {
+  button.addEventListener("click", () => switchView(button.dataset.view));
+});
+["radarMinScore", "radarTypeFilter", "radarStatusFilter"].forEach((id) => {
+  $(`#${id}`).addEventListener("change", () => refreshRadar().catch((error) => toast(error.message, true)));
+});
+$("#refreshRadarBtn").addEventListener("click", () => refreshRadar().catch((error) => toast(error.message, true)));
+$("#scanRadarBtn").addEventListener("click", scanRadar);
+if (location.hash === "#radar") switchView("radar");

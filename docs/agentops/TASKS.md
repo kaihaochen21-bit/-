@@ -236,3 +236,26 @@
   - 原始 30 秒分镜有备份。
 - 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-022 记录。
 - 限制：豆包免费额度在完成第 4 条豆包镜头后耗尽，第 5 段使用本地后期收尾镜头；前 4 段为豆包生成。
+
+## TASK-023：AI 短剧情报雷达
+
+- 状态：IMPLEMENTED / VERIFIED_LOCAL
+- 负责人：orchestrator / coder / tester
+- 分支：`codex/TASK-023-ai-drama-radar`
+- 目标：在现有 FastAPI/SQLite 内容工厂中增加情报雷达，后台定期采集 GitHub 与官方公开来源。
+- 产物：
+  - `projects/novel_promo_factory/app/radar.py`
+  - `projects/novel_promo_factory/app/radar_cli.py`
+  - `projects/novel_promo_factory/app/static/` 中的雷达页面
+  - `projects/novel_promo_factory/enable_radar_task.bat`
+  - `projects/novel_promo_factory/disable_radar_task.bat`
+  - `projects/novel_promo_factory/scripts/install_radar_task.ps1`
+  - `projects/novel_promo_factory/scripts/uninstall_radar_task.ps1`
+  - `projects/novel_promo_factory/radar_notify.ps1`
+- 验收：
+  - 首次扫描只建立快照，不显示虚假历史增长。
+  - 12–36 小时内的最近快照可换算 24 小时 Star 增量。
+  - 支持仓库、官方新闻、页面更新、评分筛选、状态标记和日报。
+  - GitHub 限流、RSS/HTML 失败时保留已完成结果并记录错误。
+  - 不读取付费生成密钥、不安装第三方 Skill、不发起外部写操作。
+- 证据：见 `EVIDENCE.md` 的 TASK-023 记录。

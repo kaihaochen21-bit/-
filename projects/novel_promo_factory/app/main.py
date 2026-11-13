@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import os
+from datetime import datetime
 from contextlib import asynccontextmanager
 import shutil
 from pathlib import Path
@@ -11,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, doubao, generation, media, novel, package, stock, templates
+from . import config, db, doubao, generation, media, novel, package, radar, stock, templates
 from .jimeng_client import JimengMCPClient
 
 @asynccontextmanager
@@ -98,6 +100,10 @@ class PublishedUpdate(BaseModel):
     metrics: dict[str, Any] = Field(default_factory=dict)
 
 
+class RadarStatusUpdate(BaseModel):
+    status: Literal["unread", "saved", "trying", "tried", "ignored"]
+
+
 class LeadCreate(BaseModel):
     post_id: int | None = None
     platform: str = ""
@@ -142,6 +148,8 @@ async def health(deep: bool = False) -> dict[str, Any]:
         "mcp_source_root": str(config.mcp_source_root()),
         "mcp_source_exists": config.mcp_source_root().is_dir(),
         "kling_ignored": True,
+        "github_token_configured": bool(os.getenv("GITHUB_TOKEN")),
+        "radar": db.radar_dashboard(),
     }
     if deep:
         try:
@@ -435,3 +443,68 @@ def create_lead(payload: LeadCreate) -> dict[str, Any]:
 @app.get("/api/dashboard")
 def dashboard() -> dict[str, Any]:
     return db.dashboard()
+
+
+@app.get("/api/radar/dashboard")
+def radar_dashboard(
+    status: str | None = None,
+    item_type: str | None = None,
+    min_score: float = 50,
+    limit: int = 200,
+) -> dict[str, Any]:
+    stats = db.radar_dashboard()
+    items = db.list_radar_items(status=status, item_type=item_type, min_score=min_score, limit=limit)
+    update_items = db.list_radar_items(item_type="news", min_score=0, limit=50)
+    update_items.extend(db.list_radar_items(item_type="update", min_score=0, limit=50))
+    update_items.sort(key=lambda item: item.get("last_seen_at") or "", reverse=True)
+    latest = stats.get("latest_run") or {}
+    return {
+        "stats": stats,
+        "items": items,
+        "updates": update_items,
+        "last_errors": latest.get("errors") or [],
+        "rate_limit": latest.get("rate_limit") or {},
+    }
+
+
+@app.post("/api/radar/scan")
+async def radar_scan() -> dict[str, Any]:
+    try:
+        with radar.scan_lock():
+            return await radar.scan_now(generate_report=True, notify=False)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/radar/items/{item_id}/status")
+def radar_item_status(item_id: int, payload: RadarStatusUpdate) -> dict[str, Any]:
+    item = db.update_radar_item_status(item_id, payload.status)
+    if not item:
+        raise HTTPException(status_code=404, detail="雷达项目不存在")
+    return item
+
+
+@app.get("/api/radar/report/latest")
+def radar_report_latest(format: Literal["html", "md"] = "html") -> FileResponse:
+    suffix = "html" if format == "html" else "md"
+    reports = sorted(config.radar_reports_dir().glob(f"*.{suffix}"), reverse=True)
+    if not reports:
+        raise HTTPException(status_code=404, detail="还没有生成雷达日报")
+    media_type = "text/html; charset=utf-8" if suffix == "html" else "text/markdown; charset=utf-8"
+    return FileResponse(reports[0], media_type=media_type)
+
+
+@app.get("/api/radar/report/{report_date}")
+def radar_report(report_date: str, format: Literal["html", "md"] = "html") -> FileResponse:
+    try:
+        datetime.strptime(report_date, "%Y-%m-%d")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="日报日期格式应为 YYYY-MM-DD") from exc
+    suffix = "html" if format == "html" else "md"
+    path = config.radar_reports_dir() / f"{report_date}.{suffix}"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="该日期的雷达日报不存在")
+    media_type = "text/html; charset=utf-8" if suffix == "html" else "text/markdown; charset=utf-8"
+    return FileResponse(path, media_type=media_type)

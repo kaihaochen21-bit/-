@@ -74,3 +74,12 @@
 - 自动选书按类型、关键词、优先级和使用次数评分；只从用户录入的候选池选择。
 - 自动创建的项目先进入 `pending_approval`，用户接受后才允许付费生成；拒绝后可自动切换下一条候选。
 - 候选和项目决策均保存在 SQLite，不联网抓取小说平台。
+
+## TASK-023 补充：AI 短剧情报雷达架构
+
+- `RadarCollector` 读取 GitHub Search、候选仓库 README/SKILL.md、OpenAI RSS、Kling/Runway/MiniMax/火山方舟页面。
+- `RadarScorer` 执行相关性、24 小时 Star 增长、近期活跃、可信度和降本评分；首次扫描输出 `growth_baseline=true`。
+- SQLite 新增 `radar_items`、`radar_repo_snapshots`、`radar_runs`、`radar_source_state`，不改动内容工厂原有项目表。
+- `radar_cli.py` 提供计划任务入口 `python -m app.radar_cli scan --scheduled`，并使用文件锁防止并发扫描。
+- FastAPI 新增雷达 dashboard、扫描、状态更新和日报接口；网页增加“内容工厂 / AI 情报雷达”切换。
+- 外部读取均使用公开 GET 请求，不写入第三方平台；通知只调用本机 PowerShell 气泡提示。

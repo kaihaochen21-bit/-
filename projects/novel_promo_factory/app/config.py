@@ -17,8 +17,20 @@ def assets_dir() -> Path:
 def db_path() -> Path:
     return data_dir() / "app.db"
 
+def radar_data_dir() -> Path:
+    return data_dir() / "radar"
+
+
+def radar_reports_dir() -> Path:
+    return radar_data_dir() / "reports"
+
+
 def ensure_dirs() -> None:
-    for path in (data_dir(), content_dir(), assets_dir(), assets_dir() / "manual", assets_dir() / "candidates", assets_dir() / "generated"):
+    for path in (
+        data_dir(), content_dir(), assets_dir(), assets_dir() / "manual",
+        assets_dir() / "candidates", assets_dir() / "generated",
+        radar_data_dir(), radar_reports_dir(),
+    ):
         path.mkdir(parents=True, exist_ok=True)
 
 def mcp_source_root() -> Path:

@@ -15,7 +15,12 @@
     <div id="healthPills" class="pills"></div>
   </header>
 
-  <main class="layout">
+  <nav class="view-tabs" aria-label="功能切换">
+    <button class="view-tab active" data-view="factory">内容工厂</button>
+    <button class="view-tab" data-view="radar">AI 情报雷达 <span id="radarUnreadBadge" class="nav-badge hidden">0</span></button>
+  </nav>
+
+  <main id="factoryView" class="layout">
     <aside class="sidebar">
       <section class="card">
         <h2>新建项目</h2>
@@ -177,6 +182,44 @@
         <h2>运行日志</h2>
         <pre id="output" class="output">等待操作…</pre>
       </section>
+    </section>
+  </main>
+
+  <main id="radarView" class="radar-view hidden">
+    <section class="card radar-hero">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">TASK-023 · 每 4 小时更新</p>
+          <h2>AI 短剧情报雷达</h2>
+          <p class="muted">追踪 GitHub Star 增长、Skill、工作流和官方模型动态。自动规则评估，不自动安装第三方代码。</p>
+        </div>
+        <div class="radar-actions">
+          <a id="radarReportLink" class="button-link" href="/api/radar/report/latest" target="_blank">打开今日日报</a>
+          <button id="scanRadarBtn" class="primary">立即扫描</button>
+        </div>
+      </div>
+      <div id="radarStats" class="radar-stats"></div>
+      <div id="radarErrors" class="notice bad hidden"></div>
+    </section>
+
+    <section class="card">
+      <div class="radar-filters">
+        <label>最低评分<select id="radarMinScore"><option value="75">75 · 优先</option><option value="60" selected>60 · 值得观察</option><option value="50">50 · 全部有效</option><option value="0">0 · 含低分</option></select></label>
+        <label>类型<select id="radarTypeFilter"><option value="">全部</option><option value="repo">GitHub 仓库</option><option value="news">官方新闻</option><option value="update">页面更新</option></select></label>
+        <label>状态<select id="radarStatusFilter"><option value="">全部状态</option><option value="unread">未读</option><option value="saved">已收藏</option><option value="trying">试用中</option><option value="tried">已试</option><option value="ignored">已忽略</option></select></label>
+        <button id="refreshRadarBtn" class="ghost">刷新雷达</button>
+      </div>
+      <div id="radarList" class="radar-list empty">还没有雷达数据。点击“立即扫描”建立第一次快照。</div>
+    </section>
+
+    <section class="card">
+      <div class="section-title"><h2>官方与行业动态</h2><span class="muted">只展示与 AI 短剧 / AI 视频相关的更新</span></div>
+      <div id="radarUpdates" class="radar-updates empty">暂无动态</div>
+    </section>
+
+    <section class="card">
+      <h2>使用边界</h2>
+      <p class="muted">GitHub 不提供历史 Star 曲线，第一次扫描只建立基线。程序不登录平台、不调用付费生成 API、不下载或执行第三方安装脚本。许可证和 README 摘要来自公开数据，最终使用前仍需人工复核。</p>
     </section>
   </main>
   <div id="toast" class="toast"></div>

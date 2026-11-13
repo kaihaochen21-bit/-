@@ -152,3 +152,58 @@ JIMENG_MCP_SOURCE_ROOT=新的MCP目录
 ```
 
 该工具会读取 `shot-04.mp4` 的画面和声音，生成带标题排版的 `shot-05.mp4`。这样仍能输出完整 50 秒成片，但第 5 段不是豆包生成。需要纯豆包版本时，应在免费额度恢复后重新生成第 5 段并重渲染。
+
+## AI 短剧情报雷达
+
+网页顶栏新增“AI 情报雷达”。它每 4 小时扫描以下公开来源：
+
+- GitHub 搜索：AI 短剧、AI 漫剧、Seedance/Kling、分镜、角色一致性、ComfyUI 视频工作流
+- GitHub 仓库 README / SKILL.md、Star、Fork、最近更新和许可证
+- OpenAI News RSS、Kling Release Notes、Runway Changelog、MiniMax News、火山方舟产品页
+
+### 使用方式
+
+1. 双击 `start.bat`，在顶栏切换到“AI 情报雷达”。
+2. 点击“立即扫描”建立第一次基线。第一次只看当前热度与相关性，不伪造 Star 增长率。
+3. 后续扫描会按 24 小时快照计算 Star 增量，并以 100 分制排序：
+   - 相关性 40
+   - Star 增长 25
+   - 近期活跃 15
+   - 可信度 10
+   - 降本潜力 10
+4. 每项可标记为未读、已收藏、试用中、已试、已忽略。
+5. 日报保存在 `data/radar/reports/`，也可在网页点击“打开今日日报”。
+
+### 后台自动运行
+
+首次需要人工双击一次：
+
+```text
+enable_radar_task.bat
+```
+
+它会创建 Windows 计划任务 `AI-Drama-Radar`，每天 00:30、04:30、08:30、12:30、16:30、20:30 扫描，因此早上 08:30 会生成当天日报。电脑关机或休眠错过时间后，Windows 会尝试补跑。
+
+取消自动运行：
+
+```text
+disable_radar_task.bat
+```
+
+### 可选配置
+
+没有 GitHub Token 也能运行，但搜索 API 限额较低。可在启动程序前设置：
+
+```powershell
+setx GITHUB_TOKEN "你的只读 GitHub Token"
+```
+
+Token 只从环境变量读取，不写入 SQLite 或日志。关闭终端并重新启动应用后生效。
+
+### 边界
+
+- 只读取公开 GitHub 和官方公开页面，不登录、不评论、不发送消息。
+- 不自动安装、下载或执行第三方 Skill/仓库脚本。
+- 不调用 ARK、Kling、Seedream、Seedance 或其他付费生成 API。
+- HTML 官方页面只能检测“页面有变化”，具体内容需要打开原链接复核。
+- 评分是规则化筛选，不等于对项目质量、安全性和许可证的最终审查。

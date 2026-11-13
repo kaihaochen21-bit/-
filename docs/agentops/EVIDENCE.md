@@ -371,3 +371,28 @@ cd projects\novel_promo_factory
 - 当前文件：`最后一班地铁_50秒_9x16_1080p_可发布.mp4`
 - 文件为原始成片直接复制，未二次压缩；SHA-256 与交付原片一致：`224B5D3FE6DA20904C07DE07D65B11F2EA7CEF503BF18CDE391C2E1300F7CCFE`。
 - 目录只放发布用最终 MP4；字幕、音乐、分镜、单镜头和工程文件留在原交付目录。
+
+## TASK-023：AI 短剧情报雷达
+
+- 状态：DONE（本地验证）
+- 分支：`codex/TASK-023-ai-drama-radar`
+- 实现：GitHub/官方源采集、评分、SQLite 快照、FastAPI API、网页雷达页、Markdown/HTML 日报、Windows 通知、计划任务启停脚本。
+- 验证：
+  - `python -m pytest -q`：43 passed
+  - `python -m py_compile app/radar.py app/radar_cli.py app/main.py app/db.py app/config.py`：通过
+  - `node --check app/static/app.js`：通过
+  - PowerShell 计划任务脚本与通知脚本解析：通过
+  - 实际只读扫描：run_id=3，status=ok，items_found=31，new_items=0，rate_limit remaining=2
+  - 生成的日报：`data/radar/reports/2026-11-13.md`、`2026-11-13.html`
+  - 浏览器冒烟：`http://127.0.0.1:8765/#radar` 正常加载雷达页；实际选择“已收藏”后 SQLite 状态更新且未读数从 31 变为 30。
+- 未执行：
+  - 未注册 Windows 计划任务（需要用户双击 `enable_radar_task.bat` 并确认系统任务安装）。
+  - 未执行任何付费生成、第三方安装脚本、平台登录或外部写入。
+- 风险：
+  - HTML 官方页面只做内容指纹监测，页面改版可能只能提示“有变化”而无法提取标题。
+  - 无 GitHub Token 时搜索限额较低；已实现 403/429 部分成功和错误记录。
+  - 评分是规则化筛选，不等同于安全审计或模型效果评测。
+- 计划任务干运行校验：`pythonw.exe -m app.radar_cli scan --scheduled`、6 个每日触发点、`StartWhenAvailable=True`、`MultipleInstances=IgnoreNew`；检查结果 `TASK_NOT_REGISTERED`，未替用户实际安装系统任务。
+- 独立测试回归修复：12h/36h 快照的 `star_growth_pct_24h` 已改为基于归一化 `star_delta_24h` 计算；新增两项边界测试。全量测试最新结果：43 passed。
+- 独立 tester 复验：修复后全量 `43 passed in 10.61s`；12h 专项 `star_delta_24h=240`、`star_growth_pct_24h=240.0`；36h 专项 `star_delta_24h=80`、`star_growth_pct_24h=80.0`，原 FAIL 已转 PASS。
+- Windows 通知脚本直接执行 `powershell -File radar_notify.ps1 -Title ... -Message ...` 退出码 0；应用调用时由 Python `subprocess.Popen` 以独立参数传入，且 PowerShell 窗口隐藏。

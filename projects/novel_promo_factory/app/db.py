@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -143,18 +143,84 @@ def init_db() -> None:
         _ensure_column(conn, "projects", "novel_id", "TEXT NOT NULL DEFAULT ''")
         _ensure_column(conn, "projects", "decision", "TEXT NOT NULL DEFAULT 'approved'")
         _ensure_column(conn, "projects", "rejection_reason", "TEXT NOT NULL DEFAULT ''")
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS radar_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_type TEXT NOT NULL,
+                source_name TEXT NOT NULL,
+                external_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                url TEXT NOT NULL,
+                summary TEXT NOT NULL DEFAULT '',
+                published_at TEXT NOT NULL DEFAULT '',
+                discovered_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL,
+                metrics_json TEXT NOT NULL DEFAULT '{}',
+                tags_json TEXT NOT NULL DEFAULT '[]',
+                scores_json TEXT NOT NULL DEFAULT '{}',
+                risk_flags_json TEXT NOT NULL DEFAULT '[]',
+                license_name TEXT NOT NULL DEFAULT '',
+                recommendation TEXT NOT NULL DEFAULT '',
+                total_score REAL NOT NULL DEFAULT 0,
+                relevance_score REAL NOT NULL DEFAULT 0,
+                growth_score REAL NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'unread',
+                notified_at TEXT NOT NULL DEFAULT '',
+                read_at TEXT NOT NULL DEFAULT '',
+                UNIQUE(item_type, external_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS radar_repo_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                full_name TEXT NOT NULL,
+                captured_at TEXT NOT NULL,
+                stars INTEGER NOT NULL DEFAULT 0,
+                forks INTEGER NOT NULL DEFAULT 0,
+                watchers INTEGER NOT NULL DEFAULT 0,
+                open_issues INTEGER NOT NULL DEFAULT 0,
+                pushed_at TEXT NOT NULL DEFAULT '',
+                UNIQUE(full_name, captured_at)
+            );
+
+            CREATE TABLE IF NOT EXISTS radar_runs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                started_at TEXT NOT NULL,
+                completed_at TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'running',
+                items_found INTEGER NOT NULL DEFAULT 0,
+                new_items INTEGER NOT NULL DEFAULT 0,
+                errors_json TEXT NOT NULL DEFAULT '[]',
+                rate_limit_json TEXT NOT NULL DEFAULT '{}'
+            );
+
+            CREATE TABLE IF NOT EXISTS radar_source_state (
+                source_key TEXT PRIMARY KEY,
+                source_name TEXT NOT NULL,
+                source_type TEXT NOT NULL,
+                last_checked_at TEXT NOT NULL DEFAULT '',
+                fingerprint TEXT NOT NULL DEFAULT '',
+                last_error TEXT NOT NULL DEFAULT '',
+                metadata_json TEXT NOT NULL DEFAULT '{}'
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_radar_items_score ON radar_items(total_score DESC);
+            CREATE INDEX IF NOT EXISTS idx_radar_items_status ON radar_items(status);
+            CREATE INDEX IF NOT EXISTS idx_radar_snapshots_repo ON radar_repo_snapshots(full_name, captured_at DESC);
+            """
+        )
 
 
 def _dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
     if row is None:
         return None
     result = dict(row)
-    for key in ("script_json", "shots_json", "metrics_json", "metadata_json"):
+    for key in ("script_json", "shots_json", "metrics_json", "metadata_json", "tags_json", "scores_json", "risk_flags_json"):
         if key in result and isinstance(result[key], str):
             try:
                 result[key.removesuffix("_json")] = json.loads(result[key])
             except json.JSONDecodeError:
-                result[key.removesuffix("_json")] = {} if key != "shots_json" else []
+                result[key.removesuffix("_json")] = [] if key in {"shots_json", "tags_json", "risk_flags_json"} else {}
     return result
 
 
@@ -410,3 +476,282 @@ def dashboard() -> dict[str, Any]:
         "qualified_leads": qualified,
         "month_spend_cny": month_spend(),
     }
+
+
+def upsert_radar_item(
+    *,
+    item_type: str,
+    source_name: str,
+    external_id: str,
+    title: str,
+    url: str,
+    summary: str = "",
+    published_at: str = "",
+    metrics: dict[str, Any] | None = None,
+    tags: list[str] | None = None,
+    scores: dict[str, Any] | None = None,
+    risk_flags: list[str] | None = None,
+    license_name: str = "",
+) -> dict[str, Any]:
+    stamp = now_iso()
+    metrics = metrics or {}
+    tags = tags or []
+    scores = scores or {}
+    risk_flags = risk_flags or []
+    total_score = float(scores.get("total_score", scores.get("total", 0)) or 0)
+    relevance_score = float(scores.get("relevance_score", 0) or 0)
+    growth_score = float(scores.get("growth_score", 0) or 0)
+    recommendation = str(scores.get("recommendation", "") or "")
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO radar_items (
+                item_type,source_name,external_id,title,url,summary,published_at,
+                discovered_at,last_seen_at,metrics_json,tags_json,scores_json,
+                risk_flags_json,license_name,recommendation,total_score,
+                relevance_score,growth_score
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(item_type, external_id) DO UPDATE SET
+                source_name=excluded.source_name,
+                title=excluded.title,
+                url=excluded.url,
+                summary=excluded.summary,
+                published_at=excluded.published_at,
+                last_seen_at=excluded.last_seen_at,
+                metrics_json=excluded.metrics_json,
+                tags_json=excluded.tags_json,
+                scores_json=excluded.scores_json,
+                risk_flags_json=excluded.risk_flags_json,
+                license_name=excluded.license_name,
+                recommendation=excluded.recommendation,
+                total_score=excluded.total_score,
+                relevance_score=excluded.relevance_score,
+                growth_score=excluded.growth_score
+            """,
+            (
+                item_type, source_name, external_id, title, url, summary, published_at,
+                stamp, stamp, json.dumps(metrics, ensure_ascii=False),
+                json.dumps(tags, ensure_ascii=False), json.dumps(scores, ensure_ascii=False),
+                json.dumps(risk_flags, ensure_ascii=False), license_name,
+                recommendation, total_score, relevance_score, growth_score,
+            ),
+        )
+        row = conn.execute(
+            "SELECT * FROM radar_items WHERE item_type=? AND external_id=?",
+            (item_type, external_id),
+        ).fetchone()
+    return _dict(row) or {}
+
+
+def get_radar_item(item_id: int) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM radar_items WHERE id=?", (item_id,)).fetchone()
+    return _dict(row)
+
+
+def list_radar_items(
+    *,
+    status: str | None = None,
+    item_type: str | None = None,
+    min_score: float = 0,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    clauses = ["total_score>=?"]
+    args: list[Any] = [float(min_score)]
+    if status:
+        clauses.append("status=?")
+        args.append(status)
+    if item_type:
+        clauses.append("item_type=?")
+        args.append(item_type)
+    args.append(max(1, min(500, int(limit))))
+    query = (
+        "SELECT * FROM radar_items WHERE "
+        + " AND ".join(clauses)
+        + " ORDER BY total_score DESC, last_seen_at DESC LIMIT ?"
+    )
+    with connect() as conn:
+        rows = conn.execute(query, args).fetchall()
+    return [_dict(row) for row in rows if row is not None]
+
+
+def update_radar_item_status(item_id: int, status: str) -> dict[str, Any] | None:
+    if status not in {"unread", "saved", "trying", "tried", "ignored"}:
+        raise ValueError("无效的雷达项目状态")
+    read_at = "" if status == "unread" else now_iso()
+    with connect() as conn:
+        conn.execute("UPDATE radar_items SET status=?, read_at=? WHERE id=?", (status, read_at, item_id))
+    return get_radar_item(item_id)
+
+
+def mark_radar_items_notified(item_ids: list[int]) -> None:
+    if not item_ids:
+        return
+    placeholders = ",".join("?" for _ in item_ids)
+    with connect() as conn:
+        conn.execute(
+            f"UPDATE radar_items SET notified_at=? WHERE id IN ({placeholders})",
+            (now_iso(), *item_ids),
+        )
+
+
+def list_unnotified_priority_items(min_score: float = 75) -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM radar_items WHERE total_score>=? AND notified_at='' AND status!='ignored' ORDER BY total_score DESC",
+            (float(min_score),),
+        ).fetchall()
+    return [_dict(row) for row in rows if row is not None]
+
+
+def add_radar_snapshot(full_name: str, captured_at: str, metrics: dict[str, Any]) -> None:
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO radar_repo_snapshots (full_name,captured_at,stars,forks,watchers,open_issues,pushed_at)
+            VALUES (?,?,?,?,?,?,?)
+            ON CONFLICT(full_name, captured_at) DO UPDATE SET
+                stars=excluded.stars, forks=excluded.forks, watchers=excluded.watchers,
+                open_issues=excluded.open_issues, pushed_at=excluded.pushed_at
+            """,
+            (
+                full_name,
+                captured_at,
+                int(metrics.get("stars") or 0),
+                int(metrics.get("forks") or 0),
+                int(metrics.get("watchers") or 0),
+                int(metrics.get("open_issues") or 0),
+                str(metrics.get("pushed_at") or ""),
+            ),
+        )
+
+
+def nearest_radar_snapshot(
+    full_name: str,
+    target: datetime,
+    *,
+    min_hours: float = 12,
+    max_hours: float = 36,
+) -> dict[str, Any] | None:
+    start = (target - timedelta(hours=max_hours)).isoformat()
+    end = (target - timedelta(hours=min_hours)).isoformat()
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM radar_repo_snapshots WHERE full_name=? AND captured_at BETWEEN ? AND ?",
+            (full_name, start, end),
+        ).fetchall()
+    candidates = [_dict(row) for row in rows if row is not None]
+    if not candidates:
+        return None
+    return min(
+        candidates,
+        key=lambda item: abs(
+            (target - datetime.fromisoformat(str(item["captured_at"]))).total_seconds()
+        ),
+    )
+
+
+def start_radar_run() -> int:
+    stamp = now_iso()
+    with connect() as conn:
+        conn.execute(
+            "UPDATE radar_runs SET status='interrupted', completed_at=? WHERE status='running'",
+            (stamp,),
+        )
+        cursor = conn.execute("INSERT INTO radar_runs (started_at,status) VALUES (?,?)", (stamp, "running"))
+        return int(cursor.lastrowid)
+
+
+def finish_radar_run(
+    run_id: int,
+    *,
+    status: str,
+    items_found: int,
+    new_items: int,
+    errors: list[str] | None = None,
+    rate_limit: dict[str, Any] | None = None,
+) -> None:
+    with connect() as conn:
+        conn.execute(
+            "UPDATE radar_runs SET completed_at=?,status=?,items_found=?,new_items=?,errors_json=?,rate_limit_json=? WHERE id=?",
+            (
+                now_iso(), status, int(items_found), int(new_items),
+                json.dumps(errors or [], ensure_ascii=False),
+                json.dumps(rate_limit or {}, ensure_ascii=False), run_id,
+            ),
+        )
+
+
+def latest_radar_run() -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM radar_runs ORDER BY id DESC LIMIT 1").fetchone()
+    return _dict(row)
+
+
+def get_radar_source_state(source_key: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM radar_source_state WHERE source_key=?", (source_key,)).fetchone()
+    return _dict(row)
+
+
+def update_radar_source_state(
+    source_key: str,
+    *,
+    source_name: str,
+    source_type: str,
+    fingerprint: str = "",
+    last_error: str = "",
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO radar_source_state (source_key,source_name,source_type,last_checked_at,fingerprint,last_error,metadata_json)
+            VALUES (?,?,?,?,?,?,?)
+            ON CONFLICT(source_key) DO UPDATE SET
+                source_name=excluded.source_name, source_type=excluded.source_type,
+                last_checked_at=excluded.last_checked_at, fingerprint=excluded.fingerprint,
+                last_error=excluded.last_error, metadata_json=excluded.metadata_json
+            """,
+            (
+                source_key, source_name, source_type, now_iso(), fingerprint,
+                last_error, json.dumps(metadata or {}, ensure_ascii=False),
+            ),
+        )
+
+
+def radar_dashboard() -> dict[str, Any]:
+    local_now = datetime.now().astimezone()
+    local_start = datetime.combine(local_now.date(), time.min, tzinfo=local_now.tzinfo)
+    utc_start = local_start.astimezone(timezone.utc).isoformat()
+    utc_end = (local_start + timedelta(days=1)).astimezone(timezone.utc).isoformat()
+    with connect() as conn:
+        unread = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE status='unread'").fetchone()["n"]
+        priority = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE total_score>=75 AND status!='ignored'").fetchone()["n"]
+        new_today = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE discovered_at>=? AND discovered_at<?", (utc_start, utc_end)).fetchone()["n"]
+        repos = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE item_type='repo'").fetchone()["n"]
+        updates = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE item_type!='repo'").fetchone()["n"]
+        trying = conn.execute("SELECT COUNT(*) AS n FROM radar_items WHERE status='trying'").fetchone()["n"]
+    return {
+        "unread": unread,
+        "priority": priority,
+        "new_today": new_today,
+        "repos": repos,
+        "updates": updates,
+        "trying": trying,
+        "latest_run": latest_radar_run(),
+    }
+
+
+def get_radar_item_by_external(item_type: str, external_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT * FROM radar_items WHERE item_type=? AND external_id=?",
+            (item_type, external_id),
+        ).fetchone()
+    return _dict(row)
+
+
+def delete_radar_item(item_id: int) -> None:
+    with connect() as conn:
+        conn.execute("DELETE FROM radar_items WHERE id=?", (item_id,))
