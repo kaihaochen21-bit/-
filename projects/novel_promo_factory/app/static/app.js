@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null, radar: null };
+const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null, sound: null, radar: null };
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -38,7 +38,7 @@ function fmtDate(value) {
   try { return new Date(value).toLocaleString("zh-CN", { hour12: false }); } catch { return value; }
 }
 function statusLabel(status) {
-  return ({ draft: "草稿", pending_approval: "待审核", approved: "已接受", rejected: "已拒绝", script_ready: "脚本完成", cost_ready: "成本已估算", doubao_planned: "豆包计划已准备", doubao_imported: "豆包片段已导入", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
+  return ({ draft: "草稿", pending_approval: "待审核", approved: "已接受", rejected: "已拒绝", script_ready: "脚本完成", cost_ready: "成本已估算", doubao_planned: "豆包计划已准备", doubao_imported: "豆包片段已导入", audio_planned: "声音方案已准备", audio_generated: "声音素材已生成", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
 }
 function badgeClass(kind) {
   return `tag ${esc(kind)}`;
@@ -331,12 +331,14 @@ async function loadAll() {
 }
 
 async function selectProject(id) {
-  const [project, doubaoStatus] = await Promise.all([
+  const [project, doubaoStatus, soundStatus] = await Promise.all([
     api(`/api/projects/${id}`),
     api(`/api/projects/${id}/doubao/status`),
+    api(`/api/projects/${id}/sound/status`),
   ]);
   state.current = project;
   state.doubao = doubaoStatus;
+  state.sound = soundStatus;
   $("#emptyDetail").classList.add("hidden");
   $("#detailCard").classList.remove("hidden");
   renderDetail();
@@ -383,6 +385,7 @@ function renderDetail() {
   }
 
   renderDoubao(project);
+  renderSound(project);
   renderAssets(project);
   renderPosts(project);
 }
@@ -426,6 +429,50 @@ function renderDoubao(project) {
     const prompts = (plan.shots || []).map((shot, index) => `镜头 ${index + 1}：${shot.title || ""}\n${shot.seedance_prompt || ""}`).join("\n\n");
     copyText(prompts);
   });
+}
+
+function renderSound(project) {
+  const soundState = state.sound && state.sound.project_id === project.id ? state.sound : null;
+  const badge = $("#soundBadge");
+  const box = $("#soundBox");
+  const planButton = document.querySelector('[data-action="sound-plan"]');
+  const generateButton = document.querySelector('[data-action="sound-generate"]');
+  const renderButton = document.querySelector('[data-action="sound-render"]');
+  if (!soundState || !soundState.planned) {
+    badge.textContent = "未准备";
+    badge.className = "badge";
+    box.className = "notice";
+    box.innerHTML = "尚未准备场景声音。建立方案后，每个镜头会分别获得旁白、背景音乐和环境音/音效提示。";
+    planButton.disabled = false;
+    generateButton.disabled = true;
+    renderButton.disabled = true;
+    return;
+  }
+  const providers = soundState.providers || {};
+  const providerText = [
+    `Freesound：${providers.freesound?.configured ? "已配置" : "缺少 API Key"}`,
+    `ACE-Step：${providers.ace_step?.available ? "在线" : "未启动/不可用"}`,
+    `MeloTTS：${providers.melotts?.available ? "在线" : "未启动/不可用"}`,
+  ].join(" · ");
+  const shots = soundState.plan?.shots || [];
+  const rows = shots.map((shot, index) => {
+    const audio = shot.audio_plan || {};
+    const voice = audio.voice || {};
+    const music = audio.music || {};
+    const sfx = (audio.sfx || []).map((item) => item.query).join("；") || "无";
+    return `<div class="asset-row"><div><strong>${esc(shot.id || `shot-${String(index + 1).padStart(2, "0")}`)}</strong> · ${esc(shot.title || "")}<br><small>旁白：${esc(voice.provider || "edge_tts")} · 音乐：${esc(music.provider || "local_synth")}<br>音效：${esc(sfx)}</small></div><small>${esc(music.prompt || "")}</small></div>`;
+  }).join("");
+  badge.textContent = `${soundState.generated_count || 0}/${soundState.shot_count || 0} 已生成`;
+  badge.className = "badge";
+  box.className = soundState.ready_to_render ? "notice ok" : "notice";
+  box.innerHTML = `
+    <strong>场景声音分层 · 旁白 + 背景音乐 + 环境音/音效</strong>
+    <p>${esc(providerText)}</p>
+    <p class="muted">MeloTTS、ACE-Step 或 Freesound 不可用时，会使用 Edge TTS 和本地合成声音回退；成片会记录实际使用的来源和许可证。</p>
+    <div>${rows}</div>
+  `;
+  generateButton.disabled = false;
+  renderButton.disabled = !soundState.ready_to_render;
 }
 
 function renderAssets(project) {
@@ -548,10 +595,13 @@ async function runAction(action) {
     if (action === "doubao-plan") result = await api(`/api/projects/${id}/doubao/plan`, { method: "POST", body: JSON.stringify({ target_duration: 50 }) });
     if (action === "doubao-import") result = await api(`/api/projects/${id}/doubao/import`, { method: "POST" });
     if (action === "doubao-render") result = await api(`/api/projects/${id}/doubao/render`, { method: "POST" });
+    if (action === "sound-plan") result = await api(`/api/projects/${id}/sound/plan`, { method: "POST" });
+    if (action === "sound-generate") result = await api(`/api/projects/${id}/sound/generate`, { method: "POST", body: JSON.stringify({ force: false }) });
+    if (action === "sound-render") result = await api(`/api/projects/${id}/sound/render`, { method: "POST", body: JSON.stringify({ force: false }) });
     setOutput(result);
     await selectProject(id);
     await Promise.all([refreshDashboard(), refreshProjects()]);
-    toast(action.startsWith("doubao-") ? "豆包任务操作完成" : "操作完成");
+    toast(action.startsWith("doubao-") ? "豆包任务操作完成" : action.startsWith("sound-") ? "场景声音操作完成" : "操作完成");
   } catch (error) {
     setOutput({ ok: false, error: error.message });
     toast(error.message, true);

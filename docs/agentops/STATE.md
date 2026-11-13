@@ -174,3 +174,14 @@
 - 未执行付费生成、第三方 Skill 安装、平台登录或外部写入。
 - Git：功能分支已推送 `origin/codex/TASK-023-ai-drama-radar`。
 - PR：本机未安装 `gh`，且通过浏览器创建 PR 属于对外写操作，当前保留创建链接：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-023-ai-drama-radar
+
+## TASK-024 当前状态（2026-11-13）
+
+- 状态：IMPLEMENTED / VERIFIED_LOCAL
+- 已接入场景声音方案、MeloTTS HTTP 适配、ACE-Step 1.5 REST 适配、Freesound CC0 搜索与下载、Edge TTS/本地合成回退。
+- 网页入口：项目详情页“场景声音引擎”，提供“准备场景声音方案 / 生成场景声音素材 / 生成场景混音成片”。
+- 当前《最后一班地铁》已完成 5 镜头声音方案；MeloTTS 已实际安装并在线，5 段旁白均使用 MeloTTS 生成；ACE-Step 和 Freesound 当前分别回退本地合成音乐/音效。
+- 场景混音版已复制到 `projects/抖音发布_成片库/最后一班地铁_场景声音版_9x16.mp4`。
+- Freesound 尚未配置 API Key；ACE-Step 1.5 适配器与一键安装脚本已完成，但 3GB CUDA 依赖在当前网络下未完成安装，当前使用本地合成音乐回退。
+- 场景混音版为 50.00 秒、1080×1920、30fps、H.264 + AAC；全片解码通过，音频非静音。
+- 测试：49 passed。

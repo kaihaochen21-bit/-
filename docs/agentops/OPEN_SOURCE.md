@@ -26,6 +26,9 @@
 | `imageio-ffmpeg` | https://github.com/imageio/imageio-ffmpeg | 0.8.1 | BSD-2-Clause | pip 用户安装 | orchestrator | 已用于本地视频封装，不随交付分发 |
 | OpenCV Zoo YuNet / SFace | https://github.com/opencv/opencv_zoo | 2023mar / 2021dec 模型文件 | Apache-2.0 | 下载 ONNX 模型到项目 `.models/` | orchestrator | 面部一致性质检，不随最终成片分发 |
 | `eternityspring/shuohao-skills` | https://github.com/eternityspring/shuohao-skills | `main@8af10e0ea1a550e4575666884f4deef780bf38ff` | Apache-2.0 | 经审核后复制到 `%USERPROFILE%\.codex\skills`，未执行仓库安装脚本 | orchestrator | 已安装 7 个短剧技能；`character-refs` 出图可能消耗订阅/API 额度 |
+| ACE-Step 1.5 | https://github.com/ace-step/ACE-Step-1.5 | `ca1e85fe9430179831e6bc6be790c332190a3866` | MIT | 本地独立运行时，不复制进网站仓库 | orchestrator | 场景音乐生成适配器 |
+| MeloTTS | https://github.com/myshell-ai/MeloTTS | `209145371cff8fc3bd60d7be902ea69cbdb7965a` | MIT | 本地独立运行时，不复制进网站仓库 | orchestrator | 已安装并用于中文旁白生成；独立 Python 3.11 运行时 |
+| Freesound API | https://freesound.org/docs/api/ | API v2 | 各音效独立授权 | 用户申请 Key，默认只筛选 CC0 | orchestrator | 环境音/音效检索与预览下载 |
 
 ## 强制规则
 

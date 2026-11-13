@@ -207,3 +207,97 @@ Token 只从环境变量读取，不写入 SQLite 或日志。关闭终端并重
 - 不调用 ARK、Kling、Seedream、Seedance 或其他付费生成 API。
 - HTML 官方页面只能检测“页面有变化”，具体内容需要打开原链接复核。
 - 评分是规则化筛选，不等于对项目质量、安全性和许可证的最终审查。
+
+## 场景声音引擎（MeloTTS + ACE-Step + Freesound）
+
+网页详情页新增“场景声音引擎”。它不是给整条视频随便配一首音乐，而是给每个镜头分别生成或选择：
+
+- 旁白：MeloTTS，中文/中英混合；不可用时回退 Edge TTS。
+- 背景音乐：ACE-Step 1.5，根据镜头标题、画面和声音描述生成；不可用时回退本地合成音乐。
+- 环境音/音效：Freesound API，默认只选 `Creative Commons 0`；不可用时回退本地合成环境音。
+
+### 1. 配置
+
+在 [Freesound API 申请页](https://freesound.org/apiv2/apply/) 免费申请 Key，然后复制 `.env.example` 为 `.env` 并填写：
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```text
+FREESOUND_API_KEY=你的免费APIKey
+FREESOUND_ALLOW_CC_BY=false
+ACE_STEP_URL=http://127.0.0.1:8001
+ACE_STEP_API_KEY=
+ACE_STEP_MODEL=acestep-v15-turbo
+MELOTTS_URL=http://127.0.0.1:8766
+MELOTTS_SPEAKER=ZH
+PUBLISH_VIDEO_DIR=C:\Users\陈楷浩\OneDrive\桌面\MCP一键操作\projects\抖音发布_成片库
+```
+
+`.env` 已被 Git 忽略，不要把 Key 提交到仓库。
+
+### 2. 安装本地声音运行时
+
+电脑需要 `uv`、Git，以及足够的磁盘空间：
+
+```powershell
+.\setup_audio_runtime.bat
+```
+
+它会安装：
+
+- ACE-Step 1.5：`%USERPROFILE%\.codex\audio_runtime\ACE-Step-1.5`
+- MeloTTS：`%USERPROFILE%\.codex\audio_runtime\MeloTTS`
+- MeloTTS 使用独立 Python 3.11 环境，并只启用中文/中英混合；安装脚本会应用运行时兼容补丁，避免下载无关语言模型。
+
+ACE-Step 主模型首次下载体积较大；空间不足时可以只保留本地合成回退，不影响网站运行。
+
+### 3. 启动声音服务
+
+```powershell
+.\start_audio_services.bat
+```
+
+服务地址：
+
+- ACE-Step：`http://127.0.0.1:8001`
+- MeloTTS：`http://127.0.0.1:8766`
+
+也可以单独运行 `start_ace_step.bat` 或 `start_melotts.bat`。
+
+### 4. 网页操作
+
+1. 选择项目，先完成画面或豆包镜头导入。
+2. 点击“准备场景声音方案”，系统会按每个镜头生成旁白、音乐和音效提示。
+3. 点击“生成场景声音素材”，生成音频并写入 `sound/manifest.json`。
+4. 点击“生成场景混音成片”，输出替换为场景声音分层的 MP4。
+5. 最终 MP4 同时复制到 `PUBLISH_VIDEO_DIR`，默认是 `projects/抖音发布_成片库/`。
+
+声音工程文件位于项目目录：
+
+```text
+sound/plan.json
+sound/manifest.json
+sound/assets/voice/
+sound/assets/music/
+sound/assets/sfx/
+sound/render/
+```
+
+### 5. API
+
+```text
+GET  /api/projects/{id}/sound/status
+POST /api/projects/{id}/sound/plan
+POST /api/projects/{id}/sound/generate
+POST /api/projects/{id}/sound/render
+```
+
+### 6. 授权边界
+
+- Freesound 默认只使用 `CC0`；打开 `FREESOUND_ALLOW_CC_BY=true` 后，会在清单中记录作者和来源，发布时需要按要求署名。
+- 不使用 `CC-BY-NC` 音乐或音效制作商业化内容。
+- ACE-Step 1.5 为 MIT；生成结果仍应避免刻意模仿受版权保护的歌曲或艺人风格。
+- MeloTTS 为 MIT；语音克隆或真人声音样本必须取得明确授权。
+- 发布到抖音等平台时，应按平台要求标注 AI 生成内容。

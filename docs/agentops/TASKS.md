@@ -259,3 +259,25 @@
   - GitHub 限流、RSS/HTML 失败时保留已完成结果并记录错误。
   - 不读取付费生成密钥、不安装第三方 Skill、不发起外部写操作。
 - 证据：见 `EVIDENCE.md` 的 TASK-023 记录。
+
+## TASK-024：场景声音引擎（MeloTTS + ACE-Step + Freesound）
+
+- 负责人：orchestrator
+- 状态：IMPLEMENTED / VERIFIED_LOCAL
+- 依赖：TASK-016、TASK-022
+- 目标：给每个镜头分别规划并生成旁白、背景音乐和环境音/音效，混音后输出可发布 MP4。
+- 允许修改：`projects/novel_promo_factory/app/`、`tests/`、`audio_services/`、启动脚本、项目 README 和 AgentOps 文档。
+- 产物：
+  - `app/sound.py`：声音方案、MeloTTS/ACE-Step/Freesound 适配、本地回退和 FFmpeg 分层混音。
+  - `audio_services/melotts_server.py`：MeloTTS 本地 HTTP 服务。
+  - `setup_audio_runtime.bat`、`start_audio_services.bat`、`start_ace_step.bat`、`start_melotts.bat`。
+  - `.env.example` 和项目 README 配置说明。
+  - `/sound/status`、`/sound/plan`、`/sound/generate`、`/sound/render` API 以及网页操作面板。
+- 验收：
+  - 每个镜头产生独立的旁白、音乐和 SFX 计划。
+  - 外部服务不可用时显式记录回退，不伪造生成成功。
+  - 场景混音成片保留原视频流并替换为分层音频。
+  - 最终 MP4 自动复制到发布成片库。
+  - 自动化测试覆盖声音计划、回退生成、混音和 API。
+- 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-024 记录。
+- 限制：Freesound 需要用户自己申请免费 API Key；ACE-Step/MeloTTS 首次安装和模型下载体积较大。

@@ -399,3 +399,44 @@ cd projects\novel_promo_factory
 - Git 推送：`origin/codex/TASK-023-ai-drama-radar` 已成功更新。
 - PR 状态：未创建；本机无 `gh`，浏览器创建 PR 需要单独确认。创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-023-ai-drama-radar
 - 最终网页复核：`#radar` 正常显示 31 个今日新增、3 个优先项目、29 个仓库、2 条官方动态；第一项状态保留为“已收藏”。
+
+## TASK-024：场景声音引擎（2026-11-13）
+
+### 自动化验证
+
+命令：
+
+```powershell
+cd projects\novel_promo_factory
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+结果：`49 passed in 17.51s`。覆盖场景声音计划、MeloTTS/ACE-Step/Freesound Provider 解析与回退生成、重复渲染保护、FFmpeg 场景混音、发布成片复制和声音 API。
+
+### 《最后一班地铁》场景声音方案
+
+- 5 个镜头均写入 `sound/plan.json`。
+- 每镜头包含旁白、ACE-Step 音乐提示和 Freesound 音效查询。
+- MeloTTS 已安装到独立 Python 3.11 运行时，并通过本地 HTTP 服务实际生成 5 段中文旁白。
+- 当前 Freesound 未配置 Key；ACE-Step GPU 依赖下载未完成，因此本次成片实际为 `melotts + local_synth`。
+- 生成清单：`content/32ff615c6844/sound/manifest.json`。
+- 关闭远程检查时的状态：5/5 已生成，`ready_to_render=true`。
+
+### 场景混音成片
+
+- 文件：`projects/novel_promo_factory/content/32ff615c6844/sound/render/最后一班地铁_场景声音版.mp4`
+- 大小：20,054,232 bytes
+- 时长：50.00 秒
+- 视频：1080×1920、30fps、H.264 High
+- 音频：AAC LC、48kHz、双声道、192kb/s
+- 全片 FFmpeg 解码：返回码 0，无错误输出
+- 音量：mean -28.3dB，max -7.6dB，非静音
+- SHA-256：`b645a6dbfbda56a7d4050227415645cedfe5a341d743a59104e1fec7f0b240a6`
+- 发布副本：`projects/抖音发布_成片库/最后一班地铁_场景声音版_9x16.mp4`
+
+### Provider 状态
+
+- Freesound：代码已接入，等待 `.env` 中的免费 `FREESOUND_API_KEY`。
+- ACE-Step 1.5：代码、REST 客户端、模拟 Provider 测试和启动脚本已接入；CUDA 运行时约 3GB，当前网络下载未完成。
+- MeloTTS：已安装并启动，健康检查通过，实际生成 5 段旁白；独立运行时位于 `%USERPROFILE%\.codex\audio_runtime\MeloTTS`。
+- 未伪造云端模型结果；所有回退均写入 manifest 和 warnings。

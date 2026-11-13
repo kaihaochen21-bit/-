@@ -5,6 +5,24 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+
+def _load_local_env() -> None:
+    path = PROJECT_ROOT / ".env"
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_local_env()
+
 def data_dir() -> Path:
     return Path(os.getenv("NOVEL_PROMO_DATA_DIR") or (PROJECT_ROOT / "data")).resolve()
 
@@ -74,3 +92,34 @@ def monthly_limit() -> float:
 
 def max_seedance_shots() -> int:
     return int(os.getenv("NOVEL_PROMO_MAX_SEEDANCE_SHOTS", "3"))
+
+def freesound_api_key() -> str:
+    return os.getenv("FREESOUND_API_KEY", "").strip()
+
+def freesound_allow_cc_by() -> bool:
+    return os.getenv("FREESOUND_ALLOW_CC_BY", "").strip().lower() in {"1", "true", "yes"}
+
+def ace_step_url() -> str:
+    return (os.getenv("ACE_STEP_URL") or "http://127.0.0.1:8001").rstrip("/")
+
+def ace_step_api_key() -> str:
+    return os.getenv("ACE_STEP_API_KEY", "").strip()
+
+def ace_step_model() -> str:
+    return os.getenv("ACE_STEP_MODEL") or "acestep-v15-turbo"
+
+def ace_step_timeout_seconds() -> int:
+    return int(os.getenv("ACE_STEP_TIMEOUT_SECONDS", "300"))
+
+def melotts_url() -> str:
+    return (os.getenv("MELOTTS_URL") or "http://127.0.0.1:8766").rstrip("/")
+
+def melotts_api_key() -> str:
+    return os.getenv("MELOTTS_API_KEY", "").strip()
+
+def melotts_speaker() -> str:
+    return os.getenv("MELOTTS_SPEAKER") or "ZH"
+
+def publish_video_dir() -> Path:
+    configured = os.getenv("PUBLISH_VIDEO_DIR")
+    return Path(configured).resolve() if configured else (PROJECT_ROOT.parent / "抖音发布_成片库").resolve()

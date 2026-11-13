@@ -156,3 +156,8 @@ td { color: #d1d8e7; line-height: 1.45; }
 .update-card p { margin: 6px 0 0; color: #aeb9cb; font-size: 12px; line-height: 1.6; }
 @media (max-width: 1100px) { .radar-stats { grid-template-columns: repeat(3, 1fr); } .radar-filters { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 700px) { .radar-view { padding: 0 14px 28px; } .radar-stats, .radar-filters { grid-template-columns: 1fr 1fr; } .radar-item-head { flex-direction: column; } .radar-score { text-align: left; } }
+.sound-panel {
+  border-color: #4b8a77;
+  background: linear-gradient(145deg, rgba(17, 52, 47, .78), rgba(11, 24, 23, .92));
+}
+.sound-panel .section-title h3 { letter-spacing: .02em; }

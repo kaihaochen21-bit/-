@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, doubao, generation, media, novel, package, radar, stock, templates
+from . import config, db, doubao, generation, media, novel, package, radar, sound, stock, templates
 from .jimeng_client import JimengMCPClient
 
 @asynccontextmanager
@@ -86,6 +86,10 @@ class DoubaoPlanCreate(BaseModel):
     target_duration: int = Field(default=50, ge=50, le=50)
 
 
+class SoundActionRequest(BaseModel):
+    force: bool = False
+
+
 class ManualAssetCreate(BaseModel):
     shot_id: str
     filename: str
@@ -144,6 +148,8 @@ async def health(deep: bool = False) -> dict[str, Any]:
         "seedance_model": config.seedance_model(),
         "pexels_configured": config.pexels_ready(),
         "pixabay_configured": config.pixabay_ready(),
+        "freesound_configured": bool(config.freesound_api_key()),
+        "sound_providers": sound.provider_status(check_remote=False),
         "ffmpeg": config.ffmpeg_executable(),
         "mcp_source_root": str(config.mcp_source_root()),
         "mcp_source_exists": config.mcp_source_root().is_dir(),
@@ -339,6 +345,42 @@ def generate_dry_run(project_id: str) -> dict[str, Any]:
 async def generate_confirm(project_id: str, payload: ConfirmGenerate) -> dict[str, Any]:
     try:
         return await generation.confirm_generation(project_id, confirmed=payload.confirmed)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/projects/{project_id}/sound/status")
+def sound_status(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return sound.status(project_id, check_remote=True)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/sound/plan")
+def sound_plan(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return sound.build_plan(project_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/sound/generate")
+def sound_generate(project_id: str, payload: SoundActionRequest) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return sound.generate_assets(project_id, force=payload.force)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/sound/render")
+def sound_render(project_id: str, payload: SoundActionRequest) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return sound.render_scene_video(project_id, force=payload.force)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
