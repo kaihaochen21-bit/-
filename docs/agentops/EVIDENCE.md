@@ -364,3 +364,10 @@ cd projects\novel_promo_factory
 - `GET /api/projects/32ff615c6844/doubao/status`：5 个片段有效、5 个已导入、`ready_to_render=true`、无缺失。
 - `GET /api/projects/32ff615c6844/video`：HTTP 206，`video/mp4`，`Content-Range: bytes 0-1023/20061158`。
 - 交付成片 SHA-256：`224B5D3FE6DA20904C07DE07D65B11F2EA7CEF503BF18CDE391C2E1300F7CCFE`。
+
+### 发布成片库
+
+- 目录：`projects/抖音发布_成片库/`
+- 当前文件：`最后一班地铁_50秒_9x16_1080p_可发布.mp4`
+- 文件为原始成片直接复制，未二次压缩；SHA-256 与交付原片一致：`224B5D3FE6DA20904C07DE07D65B11F2EA7CEF503BF18CDE391C2E1300F7CCFE`。
+- 目录只放发布用最终 MP4；字幕、音乐、分镜、单镜头和工程文件留在原交付目录。
