@@ -172,3 +172,5 @@
 - 测试：43 passed。
 - 当前未注册 Windows 计划任务；用户按需双击 `enable_radar_task.bat` 后才会启用每 4 小时后台扫描。
 - 未执行付费生成、第三方 Skill 安装、平台登录或外部写入。
+- Git：功能分支已推送 `origin/codex/TASK-023-ai-drama-radar`。
+- PR：本机未安装 `gh`，且通过浏览器创建 PR 属于对外写操作，当前保留创建链接：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-023-ai-drama-radar

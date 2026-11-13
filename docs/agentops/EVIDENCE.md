@@ -396,3 +396,6 @@ cd projects\novel_promo_factory
 - 独立测试回归修复：12h/36h 快照的 `star_growth_pct_24h` 已改为基于归一化 `star_delta_24h` 计算；新增两项边界测试。全量测试最新结果：43 passed。
 - 独立 tester 复验：修复后全量 `43 passed in 10.61s`；12h 专项 `star_delta_24h=240`、`star_growth_pct_24h=240.0`；36h 专项 `star_delta_24h=80`、`star_growth_pct_24h=80.0`，原 FAIL 已转 PASS。
 - Windows 通知脚本直接执行 `powershell -File radar_notify.ps1 -Title ... -Message ...` 退出码 0；应用调用时由 Python `subprocess.Popen` 以独立参数传入，且 PowerShell 窗口隐藏。
+- Git 推送：`origin/codex/TASK-023-ai-drama-radar` 已成功更新。
+- PR 状态：未创建；本机无 `gh`，浏览器创建 PR 需要单独确认。创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-023-ai-drama-radar
+- 最终网页复核：`#radar` 正常显示 31 个今日新增、3 个优先项目、29 个仓库、2 条官方动态；第一项状态保留为“已收藏”。
