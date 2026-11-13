@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-const state = { projects: [], current: null, manual: [], novels: [], health: null };
+const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null };
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -34,7 +34,7 @@ function fmtDate(value) {
   try { return new Date(value).toLocaleString("zh-CN", { hour12: false }); } catch { return value; }
 }
 function statusLabel(status) {
-  return ({ draft: "草稿", pending_approval: "待审核", approved: "已接受", rejected: "已拒绝", script_ready: "脚本完成", cost_ready: "成本已估算", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
+  return ({ draft: "草稿", pending_approval: "待审核", approved: "已接受", rejected: "已拒绝", script_ready: "脚本完成", cost_ready: "成本已估算", doubao_planned: "豆包计划已准备", doubao_imported: "豆包片段已导入", generated: "已生成", rendered: "已渲染", packaged: "已打包" })[status] || status || "未知";
 }
 function badgeClass(kind) {
   return `tag ${esc(kind)}`;
@@ -194,7 +194,12 @@ async function loadAll() {
 }
 
 async function selectProject(id) {
-  state.current = await api(`/api/projects/${id}`);
+  const [project, doubaoStatus] = await Promise.all([
+    api(`/api/projects/${id}`),
+    api(`/api/projects/${id}/doubao/status`),
+  ]);
+  state.current = project;
+  state.doubao = doubaoStatus;
   $("#emptyDetail").classList.add("hidden");
   $("#detailCard").classList.remove("hidden");
   renderDetail();
@@ -240,8 +245,50 @@ function renderDetail() {
     approval.classList.add("hidden");
   }
 
+  renderDoubao(project);
   renderAssets(project);
   renderPosts(project);
+}
+
+function renderDoubao(project) {
+  const batch = state.doubao && state.doubao.project_id === project.id ? state.doubao : null;
+  const badge = $("#doubaoBadge");
+  const box = $("#doubaoBox");
+  if (!batch || !batch.planned) {
+    badge.textContent = "未准备";
+    badge.className = "badge";
+    box.className = "notice";
+    box.innerHTML = "尚未建立豆包任务包。点击“准备豆包 50 秒任务包”生成 5 条 10 秒提示词、镜头计划与原分镜备份。";
+    document.querySelectorAll('[data-action="doubao-import"]').forEach((button) => button.disabled = true);
+    document.querySelectorAll('[data-action="doubao-render"]').forEach((button) => button.disabled = true);
+    return;
+  }
+
+  const plan = batch.plan || {};
+  const segments = batch.segments || [];
+  const statusText = batch.ready_to_render ? "5 段齐全，可成片" : batch.ready_to_import ? "5 段已齐，待导入" : `已就绪 ${batch.valid_count || 0}/5`;
+  badge.textContent = statusText;
+  badge.className = "badge";
+  const rows = segments.map((segment) => {
+    const mark = segment.valid ? "已就绪" : segment.exists ? "无法解码" : "未生成";
+    const detail = segment.valid ? `${Number(segment.duration || 0).toFixed(2)}s · ${segment.width}×${segment.height}` : "等待豆包输出";
+    return `<div class="asset-row"><div><strong>${esc(segment.shot_id)}</strong> · ${esc(mark)}<br><small>${esc(detail)}</small></div><small>${esc(segment.path)}</small></div>`;
+  }).join("");
+  box.className = batch.ready_to_render ? "notice ok" : "notice";
+  box.innerHTML = `
+    <strong>${esc(plan.model || "Seedance 2.0 Mini")} · ${esc(plan.aspect_ratio || "9:16")} · ${esc(plan.generation_resolution || "720p")}</strong>
+    <p>${esc(plan.shot_count || 5)} 个镜头 × ${esc(plan.duration_per_shot || 10)} 秒 = ${esc(plan.target_duration || 50)} 秒 · 预计消耗约 ${esc(batch.estimated_quota_units || 10)} 个免费额度单位</p>
+    <p class="muted">${esc(batch.quota_note || "")}</p>
+    <div class="publish-actions"><button class="small" id="copyDoubaoPrompts">复制全部豆包提示词</button></div>
+    <div>${rows}</div>
+  `;
+  document.querySelectorAll('[data-action="doubao-import"]').forEach((button) => button.disabled = !batch.ready_to_import);
+  document.querySelectorAll('[data-action="doubao-render"]').forEach((button) => button.disabled = !batch.ready_to_import);
+  const copyButton = $("#copyDoubaoPrompts");
+  if (copyButton) copyButton.addEventListener("click", () => {
+    const prompts = (plan.shots || []).map((shot, index) => `镜头 ${index + 1}：${shot.title || ""}\n${shot.seedance_prompt || ""}`).join("\n\n");
+    copyText(prompts);
+  });
 }
 
 function renderAssets(project) {
@@ -361,10 +408,13 @@ async function runAction(action) {
     }
     if (action === "render") result = await api(`/api/projects/${id}/render`, { method: "POST" });
     if (action === "package") result = await api(`/api/projects/${id}/package`, { method: "POST" });
+    if (action === "doubao-plan") result = await api(`/api/projects/${id}/doubao/plan`, { method: "POST", body: JSON.stringify({ target_duration: 50 }) });
+    if (action === "doubao-import") result = await api(`/api/projects/${id}/doubao/import`, { method: "POST" });
+    if (action === "doubao-render") result = await api(`/api/projects/${id}/doubao/render`, { method: "POST" });
     setOutput(result);
     await selectProject(id);
     await Promise.all([refreshDashboard(), refreshProjects()]);
-    toast("操作完成");
+    toast(action.startsWith("doubao-") ? "豆包任务操作完成" : "操作完成");
   } catch (error) {
     setOutput({ ok: false, error: error.message });
     toast(error.message, true);

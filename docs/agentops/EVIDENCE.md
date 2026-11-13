@@ -248,3 +248,119 @@
 - 新增 `/api/projects/auto-batch` 和前端“批量生成待审项目并搜集素材”按钮。
 - 修复 Pixabay 视频 `per_page` 最小值、素材写入字段冲突和错误日志 Key 泄露问题。
 - `pytest -q`：17 passed；网页启动和 5 个项目 API 查询正常。
+
+## TASK-019 短剧技能集安装（2026-11-12）
+
+### 安装来源
+
+- GitHub：`eternityspring/shuohao-skills`
+- 提交：`8af10e0ea1a550e4575666884f4deef780bf38ff`
+- 许可证：Apache-2.0
+- 安装路径：`C:\Users\陈楷浩\.codex\skills`
+
+### 自测
+
+- `character-refs`：233 项通过。
+- `novel-art`：151 项通过。
+- `novel-characters`：337 项通过。
+- `novel-outline`：249 项通过。
+- `novel-script`：154 项通过。
+- `novel-staging`：99 项通过。
+- `novel-storyboard`：336 项通过。
+- 合计：1,559 项断言通过，无模型调用、无 API 费用。
+
+### 安装一致性
+
+- 对比审查目录与 `C:\Users\陈楷浩\.codex\skills` 下同名技能。
+- 共比较 113 个文件，SHA-256 不一致 0 个、缺失 0 个。
+
+### 使用限制
+
+- `character-refs` 实际出图时才可能调用 Codex 订阅、OpenAI API 或自定义命令。
+- 未执行付费生成、未使用 OpenAI API、未运行仓库根目录安装脚本。
+
+## TASK-020 本机豆包短剧样片（2026-11-13）
+
+### 调用链
+
+- 本机豆包版本窗口：`都市悬疑样片创作需求 - 豆包`。
+- 上传技能：`doubao-upload/shuohao-short-drama.zip`，42,383 bytes。
+- 豆包技能管理页显示：`Shuohao Short Drama`。
+- 豆包对话中明确显示：`已读取 shuohao short drama 技能中的 SKILL.md`。
+
+### 生成结果
+
+- 剧本标题：《最后一单》。
+- 模型：Seedance 2.0 Mini。
+- 视频：`projects/doubao_shuohao_sample/最后一单_10秒_9x16_720p.mp4`。
+- 大小：2,082,704 bytes。
+- SHA-256：`DBDB909548585E88E916DE0DD2C43413C7D36C0D4A19384F24A0C3229E219E37`。
+- 时长：10.08 秒。
+- 视频：H.264 High、720×1280、24fps、yuv420p。
+- 音频：AAC LC、44100 Hz、双声道。
+- FFmpeg 全片解码返回码：0。
+- 采样 0–9 秒帧亮度与帧差非零，确认不是空白视频。
+- 豆包界面显示：`本次生成将消耗每日免费额度`；未显示额外付费金额。
+
+### 复用说明
+
+- `projects/doubao_shuohao_sample/README.md` 记录了打开方式、规格和调用链。
+- 该调用方式是桌面 UI 自动化桥接，不是豆包官方 API。
+
+## TASK-021 豆包免费视频额度核查（2026-11-13）
+
+- 客户端订阅页：免费套餐为长期免费 ¥0，含“图片与视频生成”，说明为“满足日常使用次数”，未显示精确数值。
+- 客户端订阅页标准套餐：每月 9,000 额度，视频生成升级 Seedance 2.5，单个视频最长 30 秒。
+- 外部报道（新浪科技转载快科技，2026-02-11）：每天 10 个视频额度，10 秒视频消耗 2 个额度。
+- 客户端检索回答：每天 10 次免费额度，成功一条扣 1 次，失败不扣；与外部报道存在冲突。
+- 实际操作：本次 10 秒 Seedance 2.0 Mini 视频生成成功，客户端只提示“消耗每日免费额度”，未显示具体扣减数值。
+- 结论：保守按 50 秒/天规划；精确剩余额度需以账号“订阅/额度管理”实时显示为准。
+
+
+## TASK-022：豆包任务桥与 50 秒成片证据（2026-11-13）
+
+### 自动化验证
+
+命令：
+
+```powershell
+cd projects\novel_promo_factory
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+结果：`22 passed in 5.97s`（包含新增豆包任务计划、片段导入、本地收尾来源和音频生成测试）。
+
+### 成片验证
+
+- 文件：`projects/最后一班地铁_50秒_交付/最后一班地铁_50秒_1080x1920.mp4`
+- 大小：20,061,158 bytes
+- 时长：50.00 秒
+- 分辨率：1080×1920，9:16
+- 帧率：30fps
+- 视频：H.264 High
+- 音频：AAC LC，48kHz，双声道，193 kb/s
+- 全片解码命令：`ffmpeg -v error -i <成片> -f null NUL`
+- 解码返回码：0，无错误输出
+- 音量检测：mean_volume -24.6 dB，max_volume -2.7 dB，说明音频非静音
+
+### 镜头验证
+
+| 镜头 | 来源 | 时长 | 分辨率 | 音频 | 全片解码 |
+|---|---|---|---:|---|---|
+| shot-01 | 豆包 Seedance 2.0 Mini | 10.08s | 720×1280 | 有 | 通过 |
+| shot-02 | 豆包 Seedance 2.0 Mini | 10.08s | 720×1280 | 有 | 通过 |
+| shot-03 | 豆包 Seedance 2.0 Mini | 10.08s | 720×1280 | 有 | 通过 |
+| shot-04 | 豆包 Seedance 2.0 Mini | 10.08s | 720×1280 | 有 | 通过 |
+| shot-05 | 本地后期收尾 | 10.00s | 720×1280 | 有 | 通过 |
+
+### 额度实测
+
+当天此前已有 1 条 10 秒样片，随后成功生成 4 条 10 秒镜头；提交第 6 条 10 秒视频时，豆包提示“今日视频生成免费额度已用完”。未购买订阅或使用付费 API。
+
+### 网站与素材来源复核
+
+- 数据库已恢复原 `asset id=3` 的 Pixabay 元数据：`Momo`、`Pixabay Content License`、原来源 URL，并设为未选中。
+- `shot-05` 的本地后期片段使用独立 `local_fallback` 来源；当前已选素材为 4 个 `doubao` + 1 个 `local_fallback`。
+- `GET /api/projects/32ff615c6844/doubao/status`：5 个片段有效、5 个已导入、`ready_to_render=true`、无缺失。
+- `GET /api/projects/32ff615c6844/video`：HTTP 206，`video/mp4`，`Content-Range: bytes 0-1023/20061158`。
+- 交付成片 SHA-256：`224B5D3FE6DA20904C07DE07D65B11F2EA7CEF503BF18CDE391C2E1300F7CCFE`。

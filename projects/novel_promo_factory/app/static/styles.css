@@ -115,3 +115,14 @@ td { color: #d1d8e7; line-height: 1.45; }
 .novel-row small { color: var(--muted); font-size: 11px; }
 .novel-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 1180px) { .auto-row { grid-template-columns: 1fr; } }
+
+.doubao-panel {
+  margin: 4px 0 18px;
+  padding: 16px;
+  border: 1px solid #3b4d70;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(25,39,63,.78), rgba(13,19,29,.9));
+}
+.doubao-panel h3 { margin: 0; }
+.doubao-panel .actions { margin: 12px 0; }
+.doubao-panel .asset-row:last-child { margin-bottom: 0; }

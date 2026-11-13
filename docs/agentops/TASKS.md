@@ -182,3 +182,57 @@
   - 批量按钮不调用付费即梦 API
   - 素材错误不会在日志中暴露 `key=`
 - 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-018 记录
+
+## TASK-019：安装 eternityspring/shuohao-skills
+
+- 状态：DONE
+- 负责人：orchestrator
+- 来源：`eternityspring/shuohao-skills`，提交 `8af10e0ea1a550e4575666884f4deef780bf38ff`，Apache-2.0。
+- 产物：
+  - `C:\Users\陈楷浩\.codex\skills\character-refs`
+  - `C:\Users\陈楷浩\.codex\skills\novel-art`
+  - `C:\Users\陈楷浩\.codex\skills\novel-characters`
+  - `C:\Users\陈楷浩\.codex\skills\novel-outline`
+  - `C:\Users\陈楷浩\.codex\skills\novel-script`
+  - `C:\Users\陈楷浩\.codex\skills\novel-staging`
+  - `C:\Users\陈楷浩\.codex\skills\novel-storyboard`
+- 验收：7 个技能均有 `SKILL.md`；安装文件与审查源 113 个文件哈希一致；7 个自带自测共 1,559 项断言通过。
+- 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-019 记录。
+
+## TASK-020：本机豆包客户端调用 Shuohao Short Drama 生成样片
+
+- 状态：DONE / VIDEO_GENERATED / VERIFIED_LOCAL
+- 负责人：orchestrator
+- 目标：连接本机豆包桌面客户端，让豆包加载 `shuohao-skills` 工作流，生成剧本和视频样片。
+- 实现方式：通过 Windows UI Automation 操作豆包客户端；未使用官方 API。
+- 产物：
+  - `projects/doubao_shuohao_sample/最后一单_10秒_9x16_720p.mp4`
+  - `projects/doubao_shuohao_sample/最后一单_剧本分镜.md`
+  - `projects/doubao_shuohao_sample/最后一单_预览拼图.jpg`
+  - `projects/doubao_shuohao_sample/README.md`
+- 验收：视频为 720×1280、9:16、24fps、10.08 秒、H.264 + AAC；FFmpeg 全片解码返回码 0。
+- 说明：豆包回复确认已读取技能中的 `SKILL.md`；视频生成消耗每日免费额度，界面未显示额外付费金额。
+
+## TASK-021：豆包免费视频额度核查
+
+- 状态：DONE / SOURCE_CONFLICT_RECORDED
+- 负责人：orchestrator
+- 目标：确认豆包个人版免费视频额度的消耗与每日可生成时长。
+- 结论：官方订阅页只写“图片与视频生成，满足日常使用次数”，未公开精确换算；常见口径为每天约 10 个视频额度、5 秒 1 个、10 秒 2 个，保守产能约 50 秒/天。
+- 证据：见 `docs/agentops/DOUBAO_QUOTA.md`。
+
+
+## TASK-022：豆包免费额度任务桥与《最后一班地铁》50 秒成片
+
+- 负责人：orchestrator
+- 状态：DONE
+- 依赖：TASK-016、TASK-020、TASK-021
+- 目标：把本机豆包桌面端免费视频生成接入半自动网站，生成 5×10 秒镜头、拼接、加原创音乐和中文字幕。
+- 允许修改：`projects/novel_promo_factory/app/`、`projects/novel_promo_factory/tests/`、`projects/novel_promo_factory/tools/`、项目内容目录和相关 AgentOps 文档。
+- 验收：
+  - 网站存在任务计划、状态、导入和专用渲染接口。
+  - 5 个镜头均为 10 秒左右，成片为 50.00 秒、1080×1920、30fps、H.264 + AAC。
+  - 成片全片 FFmpeg 解码成功，音频不是静音。
+  - 原始 30 秒分镜有备份。
+- 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-022 记录。
+- 限制：豆包免费额度在完成第 4 条豆包镜头后耗尽，第 5 段使用本地后期收尾镜头；前 4 段为豆包生成。

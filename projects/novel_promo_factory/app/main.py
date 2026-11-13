@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, generation, media, novel, package, stock, templates
+from . import config, db, doubao, generation, media, novel, package, stock, templates
 from .jimeng_client import JimengMCPClient
 
 @asynccontextmanager
@@ -78,6 +78,10 @@ class ProjectDecision(BaseModel):
 
 class ConfirmGenerate(BaseModel):
     confirmed: bool = False
+
+
+class DoubaoPlanCreate(BaseModel):
+    target_duration: int = Field(default=50, ge=50, le=50)
 
 
 class ManualAssetCreate(BaseModel):
@@ -327,6 +331,42 @@ def generate_dry_run(project_id: str) -> dict[str, Any]:
 async def generate_confirm(project_id: str, payload: ConfirmGenerate) -> dict[str, Any]:
     try:
         return await generation.confirm_generation(project_id, confirmed=payload.confirmed)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/doubao/plan")
+def doubao_plan(project_id: str, payload: DoubaoPlanCreate) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.build_batch(project_id, target_duration=payload.target_duration)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/projects/{project_id}/doubao/status")
+def doubao_status(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.status(project_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/doubao/import")
+def doubao_import(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.import_segments(project_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/doubao/render")
+def doubao_render(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.render_batch(project_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
