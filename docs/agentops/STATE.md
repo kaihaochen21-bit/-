@@ -206,3 +206,14 @@
 - 测试：69 passed。
 - 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。
 - Git：本地提交 `79bc376`。推送 `origin/codex/TASK-025-radar-auto-curation` 连续 3 次因 GitHub HTTPS 连接重置/443 超时失败；远程分支尚未更新，待网络恢复后重试。
+
+## TASK-025 当前结果（2026-11-14）
+
+- 状态：DONE（本地验证）
+- 分支：`codex/TASK-025-radar-auto-curation`
+- 网页：`http://127.0.0.1:8765/#radar`
+- 已实现：今日自动精选、每天最多 1 个 Skill 自动安装、GitHub ZIP 安全下载、许可证/结构/危险模式检查、安装记录、日报与网页展示。
+- 实际安装：`A-cat-with-carrots/OnlyShot` → `C:\Users\陈楷浩\.codex\skills\ai-short-drama`
+- 测试：69 passed。
+- 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。
+- Git：本地提交 `79bc376` + `5e11e3d`。推送 `origin/codex/TASK-025-radar-auto-curation` 连续 3 次因 GitHub HTTPS 连接重置/443 超时失败；远程分支尚未更新，待网络恢复后重试。

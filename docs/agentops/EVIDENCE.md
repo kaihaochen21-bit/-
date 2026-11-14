@@ -493,3 +493,30 @@ cd projects\novel_promo_factory
 - 独立 tester 复验：原报告 14/14 个反例全部 PASS；全量 `69 passed in 21.89s`。
 - 额外加固：脚本危险模式扫描覆盖完整文本文件（不再截断 200KB）；ZIP 改为流式解压并按实际字节计数，超过 25MB 立即中止，避免仅信任归档头。
 - Git 推送：本地提交 `79bc376`；`origin/codex/TASK-025-radar-auto-curation` 推送连续 3 次失败（GitHub HTTPS 连接重置/443 超时），远程状态未更新，待网络恢复后重试。
+
+## TASK-025：AI 短剧雷达自动精选与安全安装
+
+- 状态：DONE（本地验证）
+- 分支：`codex/TASK-025-radar-auto-curation`
+- 测试：`python -m pytest -q` → `69 passed`
+- Python 编译：radar、radar_curation、radar_cli、main、db、config 全部通过
+- JavaScript：`node --check app/static/app.js` 通过
+- API：dashboard 返回 3 项精选和 1 条安装记录；`POST /api/radar/curate` 返回精选结果
+- 实际自动安装：
+  - 仓库：`A-cat-with-carrots/OnlyShot`
+  - Skill：`ai-short-drama`
+  - 路径：`C:\Users\陈楷浩\.codex\skills\ai-short-drama`
+  - 许可证：MIT
+  - 文件：62 个
+  - 安装说明：通过静态危险模式检查；安装不执行脚本
+- 日报：`data/radar/reports/2026-11-14.md` 和 HTML 版包含自动精选与安装记录
+- 安全限制：
+  - 每日最多安装 1 个新 Skill
+  - 只安装根目录存在 `SKILL.md` 的标准 Skill
+  - 拒绝许可证不明、超规模、路径穿越、符号链接和高风险提示模式
+  - 安装只复制文件，不执行仓库脚本
+- 独立 tester 发现的边界问题已修复并补回归：同日精选严格替换、69 分不安装、脚本内容危险模式扫描、ZIP 符号链接/解压前规模检查、按本地日期全局限制每日 1 个安装、计划任务和扫描 API 均启用/返回自动精选。
+- 复验命令：全量 `69 passed`；API `SHORTLIST=3 INSTALLS=1`；最新日报不再包含“不自动安装任何第三方 Skill”的矛盾表述。
+- 独立 tester 复验：原报告 14/14 个反例全部 PASS；全量 `69 passed in 21.89s`。
+- 额外加固：脚本危险模式扫描覆盖完整文本文件（不再截断 200KB）；ZIP 改为流式解压并按实际字节计数，超过 25MB 立即中止，避免仅信任归档头。
+- Git 推送：本地提交 `79bc376` + `5e11e3d`；`origin/codex/TASK-025-radar-auto-curation` 推送连续 3 次失败（GitHub HTTPS 连接重置/443 超时），远程状态未更新，待网络恢复后重试。
