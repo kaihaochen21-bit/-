@@ -223,6 +223,53 @@ function renderRadarStats(stats) {
   if (healthPill) healthPill.textContent = `雷达 · ${unread} 未读`;
 }
 
+function radarInstallLabel(status) {
+  return ({ installed: "已自动安装", already_installed: "已安装", quarantined: "已隔离", blocked: "需人工复核", failed: "处理失败", recommended: "建议浏览", not_installable: "建议直接使用", collision: "同名冲突" })[status] || status || "建议浏览";
+}
+
+function renderRadarShortlist(items) {
+  if (!items?.length) {
+    $("#radarShortlist").className = "radar-shortlist empty";
+    $("#radarShortlist").textContent = "等待下一次自动精选。扫描完成后会自动选出 3 项并处理安全 Skill。";
+    return;
+  }
+  $("#radarShortlist").className = "radar-shortlist";
+  $("#radarShortlist").innerHTML = items.map((item, index) => {
+    const status = item.install_status || "recommended";
+    const installed = ["installed", "already_installed"].includes(status);
+    const isolated = status === "quarantined";
+    const tagClass = installed ? "stock" : isolated ? "seedance" : "";
+    return `<article class="shortlist-item ${installed ? "installed" : ""}">
+      <div class="shortlist-rank">${index + 1}</div>
+      <div class="shortlist-main">
+        <div class="shortlist-head">
+          <h3><a href="${esc(item.url)}" target="_blank" rel="noreferrer">${esc(item.title)}</a></h3>
+          <span class="tag ${tagClass}">${esc(radarInstallLabel(status))}</span>
+        </div>
+        <p>${esc(clipText(item.summary || "暂无摘要", 220))}</p>
+        <p class="muted">选择理由：${esc(item.reason || "高相关")} · ${esc(item.install_detail || "可直接打开查看")}</p>
+        ${item.install_path ? `<p class="shortlist-path">${esc(item.install_path)}</p>` : ""}
+      </div>
+      <div class="radar-score">${Number(item.total_score || 0).toFixed(0)}<small>总分</small></div>
+    </article>`;
+  }).join("");
+}
+
+function renderRadarInstalls(installs) {
+  const box = $("#radarInstalls");
+  if (!box) return;
+  const active = (installs || []).filter((item) => item.status === "installed").slice(0, 6);
+  if (!active.length) {
+    box.innerHTML = "";
+    return;
+  }
+  box.innerHTML = `<h3>最近自动安装的 Skill</h3>${active.map((item) => `
+    <div class="radar-install-row">
+      <div><strong>${esc(item.skill_name)}</strong><span>${esc(item.title)} · ${esc(fmtDate(item.installed_at))}</span></div>
+      <code>${esc(item.install_path)}</code>
+    </div>`).join("")}`;
+}
+
 function renderRadarItems(items) {
   if (!items.length) {
     $("#radarList").className = "radar-list empty";
@@ -284,6 +331,8 @@ async function refreshRadar() {
   const data = await api(`/api/radar/dashboard?${params.toString()}`);
   state.radar = data;
   renderRadarStats(data.stats || {});
+  renderRadarShortlist(data.shortlist || []);
+  renderRadarInstalls(data.installs || []);
   renderRadarItems(data.items || []);
   renderRadarUpdates(data.updates || []);
   const errors = data.last_errors || [];
@@ -307,12 +356,29 @@ async function scanRadar() {
   try {
     const result = await api("/api/radar/scan", { method: "POST" });
     await refreshRadar();
-    toast(`扫描完成：发现 ${result.items_found || 0} 项，新增 ${result.new_items || 0} 项${result.errors?.length ? `，${result.errors.length} 个源异常` : ""}`, Boolean(result.errors?.length));
+    const curation = result.curation || {};
+    toast(`扫描完成：新增 ${result.new_items || 0} 项，自动安装 ${curation.auto_installed || 0} 个 Skill，隔离 ${curation.quarantined || 0} 个${result.errors?.length ? `，${result.errors.length} 个源异常` : ""}`, Boolean(result.errors?.length));
   } catch (error) {
     toast(error.message, true);
   } finally {
     button.disabled = false;
     button.textContent = "立即扫描";
+  }
+}
+
+async function curateRadar() {
+  const button = $("#curateRadarBtn");
+  button.disabled = true;
+  button.textContent = "精选处理中…";
+  try {
+    const result = await api("/api/radar/curate", { method: "POST" });
+    await refreshRadar();
+    toast(`自动精选完成：安装 ${result.auto_installed || 0} 个 Skill，隔离 ${result.quarantined || 0} 个`);
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "刷新自动精选";
   }
 }
 
@@ -398,7 +464,7 @@ function renderDoubao(project) {
     badge.textContent = "未准备";
     badge.className = "badge";
     box.className = "notice";
-    box.innerHTML = "尚未建立豆包任务包。点击“准备豆包 50 秒任务包”生成 5 条 10 秒提示词、镜头计划与原分镜备份。";
+    box.innerHTML = "尚未建立豆包任务包。点击“准备豆包任务包”生成 5–6 条 10 秒提示词、镜头计划与原分镜备份。";
     document.querySelectorAll('[data-action="doubao-import"]').forEach((button) => button.disabled = true);
     document.querySelectorAll('[data-action="doubao-render"]').forEach((button) => button.disabled = true);
     return;
@@ -592,7 +658,7 @@ async function runAction(action) {
     }
     if (action === "render") result = await api(`/api/projects/${id}/render`, { method: "POST" });
     if (action === "package") result = await api(`/api/projects/${id}/package`, { method: "POST" });
-    if (action === "doubao-plan") result = await api(`/api/projects/${id}/doubao/plan`, { method: "POST", body: JSON.stringify({ target_duration: 50 }) });
+    if (action === "doubao-plan") result = await api(`/api/projects/${id}/doubao/plan`, { method: "POST", body: JSON.stringify({ target_duration: Number(state.current?.target_duration || 50) >= 60 ? 60 : 50 }) });
     if (action === "doubao-import") result = await api(`/api/projects/${id}/doubao/import`, { method: "POST" });
     if (action === "doubao-render") result = await api(`/api/projects/${id}/doubao/render`, { method: "POST" });
     if (action === "sound-plan") result = await api(`/api/projects/${id}/sound/plan`, { method: "POST" });
@@ -662,4 +728,5 @@ document.querySelectorAll(".view-tab").forEach((button) => {
 });
 $("#refreshRadarBtn").addEventListener("click", () => refreshRadar().catch((error) => toast(error.message, true)));
 $("#scanRadarBtn").addEventListener("click", scanRadar);
+$("#curateRadarBtn").addEventListener("click", curateRadar);
 if (location.hash === "#radar") switchView("radar");

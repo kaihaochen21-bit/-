@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>即梦小说推文内容工厂</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css?v=20261114e">
 </head>
 <body>
   <header class="topbar">
@@ -80,12 +80,12 @@
           <div class="section-title">
             <div>
               <p class="eyebrow">豆包免费额度任务桥</p>
-              <h3>5 × 10 秒 = 50 秒竖屏短片</h3>
+              <h3>5–6 × 10 秒竖屏短片</h3>
             </div>
             <span id="doubaoBadge" class="badge">未准备</span>
           </div>
           <div class="actions">
-            <button data-action="doubao-plan" class="primary">准备豆包 50 秒任务包</button>
+            <button data-action="doubao-plan" class="primary">准备豆包任务包</button>
             <button data-action="doubao-import">导入豆包片段</button>
             <button data-action="doubao-render">拼接并加音乐</button>
           </div>
@@ -207,15 +207,28 @@
         <div>
           <p class="eyebrow">TASK-023 · 每 4 小时更新</p>
           <h2>AI 短剧情报雷达</h2>
-          <p class="muted">追踪 GitHub Star 增长、Skill、工作流和官方模型动态。自动规则评估，不自动安装第三方代码。</p>
+          <p class="muted">追踪 GitHub Star 增长、Skill、工作流和官方模型动态。程序自动给出少量精选，并只安装通过许可证、文件类型和危险模式静态检查的 Skill。</p>
         </div>
         <div class="radar-actions">
           <a id="radarReportLink" class="button-link" href="/api/radar/report/latest" target="_blank">打开今日日报</a>
+          <button id="curateRadarBtn">刷新自动精选</button>
           <button id="scanRadarBtn" class="primary">立即扫描</button>
         </div>
       </div>
       <div id="radarStats" class="radar-stats"></div>
       <div id="radarErrors" class="notice bad hidden"></div>
+    </section>
+
+    <section class="card radar-shortlist-card">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">无需逐项挑选</p>
+          <h2>今日自动精选</h2>
+          <p class="muted">优先展示最能降本或补齐制作链路的 3 项。通过静态安全检查的标准 Skill 会自动安装；安装过程不执行仓库脚本。</p>
+        </div>
+      </div>
+      <div id="radarShortlist" class="radar-shortlist empty">等待下一次自动精选。</div>
+      <div id="radarInstalls" class="radar-installs"></div>
     </section>
 
     <section class="card">
@@ -235,10 +248,10 @@
 
     <section class="card">
       <h2>使用边界</h2>
-      <p class="muted">GitHub 不提供历史 Star 曲线，第一次扫描只建立基线。程序不登录平台、不调用付费生成 API、不下载或执行第三方安装脚本。许可证和 README 摘要来自公开数据，最终使用前仍需人工复核。</p>
+      <p class="muted">GitHub 不提供历史 Star 曲线，第一次扫描只建立基线。程序不登录平台、不调用付费生成 API；自动安装只处理通过许可证、路径和危险模式检查的标准 Skill，且安装过程不执行仓库脚本。</p>
     </section>
   </main>
   <div id="toast" class="toast"></div>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=20261114ed"></script>
 </body>
 </html>

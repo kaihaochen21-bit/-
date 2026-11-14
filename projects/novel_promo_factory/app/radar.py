@@ -15,7 +15,7 @@ from xml.etree import ElementTree as ET
 
 import httpx
 
-from . import config, db
+from . import config, db, radar_curation
 
 
 CORE_DRAMA_TERMS = (
@@ -448,6 +448,8 @@ def build_daily_report(
     *,
     repos: list[dict[str, Any]],
     updates: list[dict[str, Any]],
+    shortlist: list[dict[str, Any]] | None = None,
+    installs: list[dict[str, Any]] | None = None,
 ) -> str:
     repos = sorted(repos, key=lambda item: float(item.get("total_score") or 0), reverse=True)
     top_repos = repos[:5]
@@ -464,9 +466,39 @@ def build_daily_report(
         "",
         "> 自动规则评估，不等同于人工评测或付费模型结论。Star 历史从本程序首次快照开始积累。",
         "",
-        "## 今日高增长与高相关项目",
-        "",
     ]
+    if shortlist:
+        status_labels = {
+            "installed": "已自动安装",
+            "already_installed": "已安装",
+            "quarantined": "已隔离",
+            "blocked": "需人工复核",
+            "failed": "处理失败",
+            "recommended": "建议浏览",
+            "not_installable": "建议直接使用",
+        }
+        lines.extend(["## 今日自动精选", ""])
+        for index, item in enumerate(shortlist, start=1):
+            status = str(item.get("install_status") or "recommended")
+            lines.append(
+                f"{index}. [{item.get('title', '')}]({item.get('url', '')}) · "
+                f"{float(item.get('total_score') or 0):.1f} 分 · {status_labels.get(status, status)}"
+            )
+            lines.append(f"   - 为什么选它：{item.get('reason', '') or '高相关'}")
+            lines.append(f"   - 自动处理：{item.get('install_detail', '') or '建议浏览原链接'}")
+            if item.get("install_path"):
+                lines.append(f"   - 本地位置：`{item['install_path']}`")
+        lines.append("")
+    if installs:
+        lines.extend(["## 自动安装记录", ""])
+        for item in installs:
+            lines.append(
+                f"- **{item.get('skill_name', '')}** ← [{item.get('title', '')}]({item.get('url', '')})"
+            )
+            lines.append(f"   - 安装位置：`{item.get('install_path', '')}`")
+            lines.append(f"   - 说明：{item.get('detail', '') or '已通过静态检查'}")
+        lines.append("")
+    lines.extend(["## 今日高增长与高相关项目", ""])
     if top_repos:
         for index, item in enumerate(top_repos, start=1):
             score = float(item.get("total_score") or 0)
@@ -516,7 +548,7 @@ def build_daily_report(
         )
     else:
         lines.append("- 暂无建议；等待更多快照后再判断。")
-    lines.extend(["", "## 运行说明", "", "- 本报告不自动安装任何第三方 Skill，不登录平台，不调用付费生成 API。", ""])
+    lines.extend(["", "## 运行说明", "", "- 自动安装仅限通过静态检查的标准 Skill；安装过程不执行仓库脚本，不登录平台，不调用付费生成 API。", ""])
     return "\n".join(lines)
 OFFICIAL_FEEDS = (
     {"key": "openai-news", "name": "OpenAI News", "url": "https://openai.com/news/rss.xml"},
@@ -723,6 +755,7 @@ async def scan_now(
     now: datetime | None = None,
     generate_report: bool = True,
     notify: bool = False,
+    auto_install: bool = False,
 ) -> dict[str, Any]:
     local_now = (now or datetime.now().astimezone()).astimezone()
     now = local_now.astimezone(timezone.utc)
@@ -807,6 +840,12 @@ async def scan_now(
                 new_items += 1
                 new_item_ids.append(int(item["id"]))
 
+        curation_result: dict[str, Any] = {}
+        try:
+            curation_result = radar_curation.auto_curate(auto_install=auto_install)
+        except Exception as exc:
+            errors.append(f"自动精选失败: {type(exc).__name__}: {exc}")
+
         report_path = ""
         report_html_path = ""
         if generate_report:
@@ -814,7 +853,7 @@ async def scan_now(
             all_items = db.list_radar_items(min_score=0, limit=500)
             repo_items = [item for item in all_items if item["item_type"] == "repo"]
             update_items = [item for item in all_items if item["item_type"] != "repo"]
-            report = build_daily_report(report_date, repos=repo_items, updates=update_items)
+            report = build_daily_report(report_date, repos=repo_items, updates=update_items, shortlist=db.list_radar_curation(report_date), installs=db.list_radar_installs(limit=20))
             markdown_path, html_path = write_daily_report(report_date, report)
             report_path = str(markdown_path)
             report_html_path = str(html_path)
@@ -846,6 +885,7 @@ async def scan_now(
             "rate_limit": rate_limit,
             "report_path": report_path,
             "report_html_path": report_html_path,
+            "curation": curation_result,
         }
     except Exception as exc:
         errors.append(f"扫描失败: {type(exc).__name__}: {exc}")

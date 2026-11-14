@@ -234,6 +234,7 @@ def test_scan_now_persists_repo_official_update_and_daily_report(tmp_path, monke
     report_path = tmp_path / "data" / "radar" / "reports" / "2026-11-13.md"
 
     assert result["status"] == "ok"
+    assert "curation" in result
     assert any(item["item_type"] == "repo" for item in items)
     assert any(item["item_type"] == "news" for item in items)
     assert report_path.is_file()
@@ -307,6 +308,7 @@ def test_radar_cli_scheduled_scan_enables_report_and_notification(tmp_path, monk
     assert result == 0
     assert calls["generate_report"] is True
     assert calls["notify"] is True
+    assert calls["auto_install"] is True
 
 
 def test_parse_feed_filters_old_news_and_generic_workflow_noise():
@@ -439,3 +441,34 @@ def test_growth_percentage_uses_normalized_24h_delta_for_36h_snapshot():
     result = radar._growth_metrics(previous, current_stars=220, now=now)
     assert result["star_delta_24h"] == 80
     assert result["star_growth_pct_24h"] == 80.0
+
+
+def test_radar_dashboard_returns_shortlist_and_install_records(tmp_path, monkeypatch):
+    from datetime import datetime
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    monkeypatch.setenv("NOVEL_PROMO_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("NOVEL_PROMO_CONTENT_DIR", str(tmp_path / "content"))
+    monkeypatch.setenv("NOVEL_PROMO_ASSETS_DIR", str(tmp_path / "assets"))
+    with TestClient(app) as client:
+        item = db.upsert_radar_item(
+            item_type="repo", source_name="GitHub", external_id="example/auto-skill",
+            title="example/auto-skill", url="https://github.com/example/auto-skill",
+            summary="安全 Skill", tags=["Skill"], scores={"total_score": 82, "repo_type": "skill"},
+            license_name="MIT",
+        )
+        today = datetime.now().astimezone().date().isoformat()
+        db.upsert_radar_curation(
+            curation_date=today, item_id=item["id"], rank=1, reason="高分优先",
+            install_status="installed", install_path="C:/skills/auto-skill", install_detail="已安全安装",
+        )
+        db.record_radar_install(
+            item_id=item["id"], repo_full_name="example/auto-skill", skill_name="auto-skill",
+            install_path="C:/skills/auto-skill", source_commit="abc", license_name="MIT",
+            status="installed", files_count=2, detail="已安全安装",
+        )
+        data = client.get("/api/radar/dashboard?min_score=60").json()
+        assert len(data["shortlist"]) == 1
+        assert len(data["installs"]) == 1
+        assert data["installs"][0]["skill_name"] == "auto-skill"

@@ -281,3 +281,21 @@
   - 自动化测试覆盖声音计划、回退生成、混音和 API。
 - 证据：见 `docs/agentops/EVIDENCE.md` 的 TASK-024 记录。
 - 限制：Freesound 需要用户自己申请免费 API Key；ACE-Step/MeloTTS 首次安装和模型下载体积较大。
+
+## TASK-025：AI 短剧雷达自动精选与安全安装
+
+- 状态：IMPLEMENTED / VERIFIED_LOCAL
+- 分支：`codex/TASK-025-radar-auto-curation`
+- 目标：自动从高相关候选中选出少量最值得关注的项目，并直接安装通过静态安全审查的标准 Skill。
+- 产物：
+  - `app/radar_curation.py`
+  - 自动精选、安装记录和资格检查数据库表
+  - `/api/radar/curate` 与 dashboard 精选/安装记录
+  - 网页“今日自动精选”和“最近自动安装的 Skill”
+  - 日报自动精选与安装记录章节
+- 验收：
+  - 每次扫描自动生成 3 项精选，不需要人工先挑。
+  - 每日最多安装 1 个新 Skill。
+  - 非根目录 Skill、许可证不明、危险模式、超限或路径不安全项目不会安装。
+  - 自动安装使用 GitHub 官方 ZIP 归档，不执行仓库脚本。
+  - 已安装 Skill 可追溯到仓库、许可证、路径和安装时间。

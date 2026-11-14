@@ -43,11 +43,20 @@ def radar_reports_dir() -> Path:
     return radar_data_dir() / "reports"
 
 
+def radar_quarantine_dir() -> Path:
+    return radar_data_dir() / "quarantine"
+
+
+def codex_skills_dir() -> Path:
+    configured = os.getenv("CODEX_SKILLS_DIR")
+    return Path(configured).resolve() if configured else (Path.home() / ".codex" / "skills").resolve()
+
+
 def ensure_dirs() -> None:
     for path in (
         data_dir(), content_dir(), assets_dir(), assets_dir() / "manual",
         assets_dir() / "candidates", assets_dir() / "generated",
-        radar_data_dir(), radar_reports_dir(),
+        radar_data_dir(), radar_reports_dir(), radar_quarantine_dir(),
     ):
         path.mkdir(parents=True, exist_ok=True)
 

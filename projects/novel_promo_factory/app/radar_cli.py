@@ -34,6 +34,7 @@ def main(argv: list[str] | None = None) -> int:
                 radar.scan_now(
                     generate_report=True,
                     notify=bool(args.scheduled),
+                    auto_install=True,
                 )
             )
         if sys.stdout is not None:

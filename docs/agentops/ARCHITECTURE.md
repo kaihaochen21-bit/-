@@ -83,3 +83,11 @@
 - `radar_cli.py` 提供计划任务入口 `python -m app.radar_cli scan --scheduled`，并使用文件锁防止并发扫描。
 - FastAPI 新增雷达 dashboard、扫描、状态更新和日报接口；网页增加“内容工厂 / AI 情报雷达”切换。
 - 外部读取均使用公开 GET 请求，不写入第三方平台；通知只调用本机 PowerShell 气泡提示。
+
+## TASK-025 补充：自动精选与安全安装架构
+
+- `radar_curation.py` 负责精选排序、安装资格判断、ZIP 安全下载/解压、静态扫描、目标目录安装和安装记录。
+- 精选采用分数优先 + 类型多样化，自动生成 3 项；安装候选最多扫描 6 个 Skill 候选，每天最多安装 1 个。
+- 只有仓库根目录 `SKILL.md` 可作为自动安装单元；嵌套 Skill 合集目前只推荐，不自动展开安装。
+- 安装源使用 `codeload.github.com/<repo>/zip/HEAD` 官方归档，禁止路径穿越和符号链接。
+- SQLite 新增 `radar_curation` 和 `radar_installs`，保存理由、状态、来源、许可证、路径和时间。

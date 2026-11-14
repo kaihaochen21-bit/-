@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, doubao, generation, media, novel, package, radar, sound, stock, templates
+from . import config, db, doubao, generation, media, novel, package, radar, radar_curation, sound, stock, templates
 from .jimeng_client import JimengMCPClient
 
 @asynccontextmanager
@@ -504,6 +504,8 @@ def radar_dashboard(
         "stats": stats,
         "items": items,
         "updates": update_items,
+        "shortlist": db.list_radar_curation(datetime.now().astimezone().date().isoformat()),
+        "installs": db.list_radar_installs(limit=20),
         "last_errors": latest.get("errors") or [],
         "rate_limit": latest.get("rate_limit") or {},
     }
@@ -513,12 +515,22 @@ def radar_dashboard(
 async def radar_scan() -> dict[str, Any]:
     try:
         with radar.scan_lock():
-            return await radar.scan_now(generate_report=True, notify=False)
+            return await radar.scan_now(generate_report=True, notify=False, auto_install=True)
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+
+@app.post("/api/radar/curate")
+def radar_curate() -> dict[str, Any]:
+    try:
+        with radar.scan_lock():
+            return radar_curation.auto_curate(auto_install=True)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 @app.post("/api/radar/items/{item_id}/status")
 def radar_item_status(item_id: int, payload: RadarStatusUpdate) -> dict[str, Any]:

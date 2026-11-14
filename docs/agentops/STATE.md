@@ -185,3 +185,13 @@
 - Freesound 尚未配置 API Key；ACE-Step 1.5 适配器与一键安装脚本已完成，但 3GB CUDA 依赖在当前网络下未完成安装，当前使用本地合成音乐回退。
 - 场景混音版为 50.00 秒、1080×1920、30fps、H.264 + AAC；全片解码通过，音频非静音。
 - 测试：49 passed。
+
+## TASK-025 当前结果（2026-11-14）
+
+- 状态：DONE（本地验证）
+- 分支：`codex/TASK-025-radar-auto-curation`
+- 网页：`http://127.0.0.1:8765/#radar`
+- 已实现：今日自动精选、每天最多 1 个 Skill 自动安装、GitHub ZIP 安全下载、许可证/结构/危险模式检查、安装记录、日报与网页展示。
+- 实际安装：`A-cat-with-carrots/OnlyShot` → `C:\Users\陈楷浩\.codex\skills\ai-short-drama`
+- 测试：69 passed。
+- 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。

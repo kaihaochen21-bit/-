@@ -206,7 +206,39 @@ def init_db() -> None:
 
             CREATE INDEX IF NOT EXISTS idx_radar_items_score ON radar_items(total_score DESC);
             CREATE INDEX IF NOT EXISTS idx_radar_items_status ON radar_items(status);
+            CREATE TABLE IF NOT EXISTS radar_curation (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                curation_date TEXT NOT NULL,
+                item_id INTEGER NOT NULL,
+                rank INTEGER NOT NULL,
+                reason TEXT NOT NULL DEFAULT '',
+                install_status TEXT NOT NULL DEFAULT 'recommended',
+                install_path TEXT NOT NULL DEFAULT '',
+                install_detail TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                UNIQUE(curation_date, item_id),
+                FOREIGN KEY(item_id) REFERENCES radar_items(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS radar_installs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_id INTEGER NOT NULL,
+                repo_full_name TEXT NOT NULL,
+                skill_name TEXT NOT NULL,
+                install_path TEXT NOT NULL,
+                source_commit TEXT NOT NULL DEFAULT '',
+                license_name TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL,
+                files_count INTEGER NOT NULL DEFAULT 0,
+                installed_at TEXT NOT NULL,
+                detail TEXT NOT NULL DEFAULT '',
+                UNIQUE(repo_full_name, skill_name),
+                FOREIGN KEY(item_id) REFERENCES radar_items(id) ON DELETE CASCADE
+            );
+
             CREATE INDEX IF NOT EXISTS idx_radar_snapshots_repo ON radar_repo_snapshots(full_name, captured_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_radar_curation_date ON radar_curation(curation_date, rank);
+            CREATE INDEX IF NOT EXISTS idx_radar_installs_repo ON radar_installs(repo_full_name);
             """
         )
 
@@ -755,3 +787,122 @@ def get_radar_item_by_external(item_type: str, external_id: str) -> dict[str, An
 def delete_radar_item(item_id: int) -> None:
     with connect() as conn:
         conn.execute("DELETE FROM radar_items WHERE id=?", (item_id,))
+
+
+def upsert_radar_curation(
+    *,
+    curation_date: str,
+    item_id: int,
+    rank: int,
+    reason: str,
+    install_status: str = "recommended",
+    install_path: str = "",
+    install_detail: str = "",
+) -> dict[str, Any]:
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO radar_curation (
+                curation_date,item_id,rank,reason,install_status,install_path,install_detail,created_at
+            ) VALUES (?,?,?,?,?,?,?,?)
+            ON CONFLICT(curation_date, item_id) DO UPDATE SET
+                rank=excluded.rank,
+                reason=excluded.reason,
+                install_status=excluded.install_status,
+                install_path=excluded.install_path,
+                install_detail=excluded.install_detail
+            """,
+            (curation_date, item_id, rank, reason, install_status, install_path, install_detail, now_iso()),
+        )
+        row = conn.execute(
+            "SELECT * FROM radar_curation WHERE curation_date=? AND item_id=?",
+            (curation_date, item_id),
+        ).fetchone()
+    return _dict(row) or {}
+
+
+def list_radar_curation(curation_date: str) -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT c.*, i.title, i.url, i.summary, i.metrics_json, i.tags_json,
+                   i.scores_json, i.risk_flags_json, i.license_name, i.total_score,
+                   i.status AS item_status
+            FROM radar_curation c
+            JOIN radar_items i ON i.id = c.item_id
+            WHERE c.curation_date=?
+            ORDER BY c.rank ASC
+            """,
+            (curation_date,),
+        ).fetchall()
+    return [_dict(row) for row in rows if row is not None]
+
+
+def record_radar_install(
+    *,
+    item_id: int,
+    repo_full_name: str,
+    skill_name: str,
+    install_path: str,
+    source_commit: str,
+    license_name: str,
+    status: str,
+    files_count: int,
+    detail: str = "",
+) -> dict[str, Any]:
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO radar_installs (
+                item_id,repo_full_name,skill_name,install_path,source_commit,
+                license_name,status,files_count,installed_at,detail
+            ) VALUES (?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(repo_full_name, skill_name) DO UPDATE SET
+                item_id=excluded.item_id,
+                install_path=excluded.install_path,
+                source_commit=excluded.source_commit,
+                license_name=excluded.license_name,
+                status=excluded.status,
+                files_count=excluded.files_count,
+                installed_at=excluded.installed_at,
+                detail=excluded.detail
+            """,
+            (
+                item_id, repo_full_name, skill_name, install_path, source_commit,
+                license_name, status, int(files_count), now_iso(), detail,
+            ),
+        )
+        row = conn.execute(
+            "SELECT * FROM radar_installs WHERE repo_full_name=? AND skill_name=?",
+            (repo_full_name, skill_name),
+        ).fetchone()
+    return _dict(row) or {}
+
+
+def get_radar_install_by_repo(repo_full_name: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT * FROM radar_installs WHERE repo_full_name=? ORDER BY id DESC LIMIT 1",
+            (repo_full_name,),
+        ).fetchone()
+    return _dict(row)
+
+
+def list_radar_installs(limit: int = 100) -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT r.*, i.title, i.url, i.total_score
+            FROM radar_installs r
+            JOIN radar_items i ON i.id = r.item_id
+            ORDER BY r.id DESC
+            LIMIT ?
+            """,
+            (max(1, min(500, int(limit))),),
+        ).fetchall()
+    return [_dict(row) for row in rows if row is not None]
+
+
+def clear_radar_curation(curation_date: str) -> None:
+    with connect() as conn:
+        conn.execute("DELETE FROM radar_curation WHERE curation_date=?", (curation_date,))

@@ -161,3 +161,23 @@ td { color: #d1d8e7; line-height: 1.45; }
   background: linear-gradient(145deg, rgba(17, 52, 47, .78), rgba(11, 24, 23, .92));
 }
 .sound-panel .section-title h3 { letter-spacing: .02em; }
+
+.radar-shortlist { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.shortlist-item { display: grid; grid-template-columns: 42px minmax(0, 1fr) 64px; gap: 12px; align-items: start; padding: 14px; border: 1px solid #31415f; border-radius: 12px; background: linear-gradient(135deg, #121b2b, #10151f); }
+.shortlist-item.installed { border-color: #2e7562; box-shadow: inset 3px 0 0 #59d6b0; }
+.shortlist-rank { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #24345a; color: #cbd5ff; font-weight: 700; }
+.shortlist-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.shortlist-head h3 { margin: 0; font-size: 15px; }
+.shortlist-head h3 a { color: #f1f4fa; text-decoration: none; }
+.shortlist-head h3 a:hover { color: #9db3ff; text-decoration: underline; }
+.shortlist-main p { margin: 7px 0 0; font-size: 12px; line-height: 1.6; color: #c0cada; }
+.shortlist-path { color: #8ee5ca !important; word-break: break-all; font-family: Consolas, monospace; }
+@media (max-width: 700px) { .shortlist-item { grid-template-columns: 34px minmax(0, 1fr); } .shortlist-item .radar-score { grid-column: 2; text-align: left; } }
+
+.radar-installs { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.radar-installs h3 { margin: 0 0 2px; color: #b8f4df; }
+.radar-install-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid #285847; background: #0f211c; border-radius: 9px; padding: 10px 12px; }
+.radar-install-row strong { display: block; font-size: 13px; }
+.radar-install-row span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+.radar-install-row code { color: #8ee5ca; font-size: 11px; max-width: 52%; overflow-wrap: anywhere; }
+@media (max-width: 700px) { .radar-install-row { flex-direction: column; align-items: flex-start; } .radar-install-row code { max-width: 100%; } }
