@@ -195,25 +195,19 @@
 - 实际安装：`A-cat-with-carrots/OnlyShot` → `C:\Users\陈楷浩\.codex\skills\ai-short-drama`
 - 测试：69 passed。
 - 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。
-
-## TASK-025 当前结果（2026-11-14）
-
-- 状态：DONE（本地验证）
-- 分支：`codex/TASK-025-radar-auto-curation`
-- 网页：`http://127.0.0.1:8765/#radar`
-- 已实现：今日自动精选、每天最多 1 个 Skill 自动安装、GitHub ZIP 安全下载、许可证/结构/危险模式检查、安装记录、日报与网页展示。
-- 实际安装：`A-cat-with-carrots/OnlyShot` → `C:\Users\陈楷浩\.codex\skills\ai-short-drama`
-- 测试：69 passed。
-- 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。
-- Git：本地提交 `79bc376`。推送 `origin/codex/TASK-025-radar-auto-curation` 连续 3 次因 GitHub HTTPS 连接重置/443 超时失败；远程分支尚未更新，待网络恢复后重试。
-
-## TASK-025 当前结果（2026-11-14）
-
-- 状态：DONE（本地验证）
-- 分支：`codex/TASK-025-radar-auto-curation`
-- 网页：`http://127.0.0.1:8765/#radar`
-- 已实现：今日自动精选、每天最多 1 个 Skill 自动安装、GitHub ZIP 安全下载、许可证/结构/危险模式检查、安装记录、日报与网页展示。
-- 实际安装：`A-cat-with-carrots/OnlyShot` → `C:\Users\陈楷浩\.codex\skills\ai-short-drama`
-- 测试：69 passed。
-- 安装过程未执行仓库脚本；含脚本 Skill 已附加 `RADAR_INSTALL_NOTICE.md`。
 - Git：本地提交 `79bc376` + `5e11e3d`。推送 `origin/codex/TASK-025-radar-auto-curation` 连续 3 次因 GitHub HTTPS 连接重置/443 超时失败；远程分支尚未更新，待网络恢复后重试。
+
+## TASK-026 当前结果（2026-11-14）
+
+- 状态：DONE（本地验证）
+- 项目：`f1497c20b328`《会替人做梦的便利店》
+- 成片：`projects/会替人做梦的便利店_60秒_交付/会替人做梦的便利店_60秒_1080x1920_可发布.mp4`
+- 发布副本：`projects/抖音发布_成片库/会替人做梦的便利店_60秒_9x16_1080p_可发布.mp4`
+- 总时长：60.10 秒；1080×1920；30fps；H.264 High；AAC 48kHz 双声道。
+- 画面来源：4 段豆包 Seedance 2.0 Mini 免费额度视频（40 秒）+ 2 段本地后期补镜（20 秒）。
+- 音频来源：MeloTTS 旁白 + 本地原创合成音乐/音效；ACE-Step 未在线，Freesound 未配置 Key。
+- 额度结论：豆包客户端继续生成下一条时明确提示今日免费视频额度已用完；未购买订阅、未切换付费 API。
+- 画面复盘：问题与改进写在 `projects/novel_promo_factory/content/f1497c20b328/创作复盘与改进.md`。
+- 质量验证：全片 FFmpeg 解码返回 0；集成响度 -17.4 LUFS；True Peak -1.5 dBFS；六镜哈希均不同。
+- 测试：`69 passed in 22.30s`；`node --check app/static/app.js` 通过。
+

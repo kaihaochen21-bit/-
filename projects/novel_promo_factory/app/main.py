@@ -83,7 +83,7 @@ class ConfirmGenerate(BaseModel):
 
 
 class DoubaoPlanCreate(BaseModel):
-    target_duration: int = Field(default=50, ge=50, le=50)
+    target_duration: int = Field(default=50, ge=50, le=60)
 
 
 class SoundActionRequest(BaseModel):

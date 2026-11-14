@@ -67,6 +67,56 @@ STYLE_PREFIX = (
 NEGATIVE = "画面中不要出现可读文字、字幕、水印、logo、真实品牌标识；不要换脸，不要多人拥挤，不要卡通风格。"
 
 
+DREAM_SHOT_BLUEPRINTS = [
+    {
+        "title": "凌晨的便利店",
+        "narration": "凌晨两点，巷口的便利店又亮了。林夏攥着奶奶的旧照片，推门走了进去。",
+        "visual": "凌晨的旧居民区巷口，小雨刚停，地面有真实积水反光。一家老式便利店亮着偏暖的白色灯管，门头文字自然虚焦。24岁中国女性林夏穿米色长风衣、深色直筒裤、黑色帆布托特包，低马尾，脸色疲惫，从画面右侧走到店门口并推门进入。固定偏侧机位，轻微跟移，保持真实肤色和衣服褶皱。",
+        "audio": "夜晚街道远处车声、鞋底踩过浅水的脚步声、便利店门铃轻响。",
+    },
+    {
+        "title": "只卖一瓶",
+        "narration": "店员把一瓶温热的琥珀色饮料推过来：重逢只卖一瓶，别买第二瓶。",
+        "visual": "同一家便利店的旧收银台，米白瓷砖和木质货架，货架包装文字全部自然虚焦。55岁中国男性店员穿灰色长袖和深蓝围裙，动作缓慢，把一只短玻璃瓶装的琥珀色饮料推到柜台中央。林夏从画面左侧伸手拿瓶，另一只手捏着一张磨损的旧照片。50毫米镜头，过肩中景，不拍夸张表情，不出现魔法光效。",
+        "audio": "冰柜低频嗡鸣、玻璃瓶底摩擦柜台、收银机轻响。",
+    },
+    {
+        "title": "热汤",
+        "narration": "回家后，她看见去世三年的奶奶正坐在餐桌边，把一碗热汤推到她面前。",
+        "visual": "中国城市老式小户型餐厅，暖黄色吊灯，桌面有使用痕迹。72岁中国女性奶奶短发银灰，穿深绿色针织开衫，戴细金边眼镜。林夏站在门口愣住，奶奶坐在桌边，把一碗冒热气的汤缓慢推向前。固定广角中景，真实室内生活质感，轻微手持呼吸感，不出现鬼魂光晕或漂浮效果。",
+        "audio": "老式挂钟滴答、瓷碗碰桌、汤匙轻响、窗外很远的城市底噪。",
+    },
+    {
+        "title": "第二瓶",
+        "narration": "奶奶轻轻按住空瓶：第二瓶不是让你再见我，是让我再留住你。该醒了。",
+        "visual": "同一张旧餐桌，林夏坐在奶奶对面，两人距离很近。奶奶一只手轻轻按住桌上的空玻璃瓶，另一只手覆在林夏手背上，眼神平静而不舍。林夏眼眶发红但没有夸张哭泣。桌面暖灯，背景保持生活杂物。35毫米镜头，双人中景，表演克制，真实泪光，无特效。",
+        "audio": "压低的环境声、布料摩擦、一次很轻的呼吸。",
+    },
+    {
+        "title": "三年前的收据",
+        "narration": "林夏惊醒，桌上没有人。碗还热着，下面压着一张三年前的收据和奶奶的照片。",
+        "visual": "清晨偏冷的光从旧窗帘缝里照进同一个小餐厅。林夏从餐桌边猛地坐直，对面椅子空着，汤碗仍冒少量热气。她移开碗，露出一张自然虚焦的旧收据和一张奶奶年轻时在便利店门口的照片。固定近中景，真实晨光、灰尘和旧桌面纹理，不出现镜头炫光。",
+        "audio": "清晨鸟声很远、椅子木腿轻响、纸张被拿起的声音。",
+    },
+    {
+        "title": "她昨天也来过",
+        "narration": "第二瓶上贴着奶奶的照片。店员说：她三年前买过。昨夜，是她在做梦。林夏没有买，只把旧照片留在柜台上。",
+        "visual": "回到同一家便利店，仍是从前那个柜台和同一名灰衣店员。柜台上放着第二只琥珀色玻璃瓶，瓶身用橡皮筋绑着奶奶的小照片。林夏看清照片后没有伸手，只把自己的旧照片轻轻放下，把第二瓶推回柜台，转身走出画面。店员没有追，低头看着照片。固定机位缓慢拉远，暖白灯管真实闪烁一次，结尾停在空柜台。",
+        "audio": "门铃、玻璃瓶轻碰、脚步离开、灯管短暂电流声，最后安静。",
+    },
+]
+
+DREAM_STYLE_PREFIX = (
+    "写实中国都市奇幻短片，竖屏9:16，720p，真实电影摄影，非广告感，非CGI。"
+    "同一女主角林夏：24岁中国女性，低马尾黑发，米色长风衣，深色直筒裤，黑色帆布托特包，素颜疲惫。"
+    "镜头保持自然皮肤纹理、真实衣物褶皱和手部结构，轻微手持呼吸感，单一连续动作，不切内部镜头。"
+)
+DREAM_NEGATIVE = (
+    "全程无字幕、无水印、无logo、无可读品牌文字；不要冷绿烟雾、蓝色魔法光、粒子、传送门、"
+    "夸张慢动作、CGI质感、换脸、手指畸形、多人拥挤、卡通风格。"
+)
+
+
 class DoubaoBatchError(RuntimeError):
     pass
 
@@ -93,23 +143,86 @@ def _segments_dir(project: dict[str, Any]) -> Path:
 def expected_segment_paths(project_id: str) -> list[Path]:
     project = _project(project_id)
     folder = _segments_dir(project)
-    return [folder / f"shot-{index:02d}.mp4" for index in range(1, SHOT_COUNT + 1)]
+    plan = _load_plan(project)
+    count = int(plan.get("shot_count") or SHOT_COUNT) if plan else SHOT_COUNT
+    return [folder / f"shot-{index:02d}.mp4" for index in range(1, count + 1)]
 
 
-def _prompt_for(index: int, shot: dict[str, Any]) -> str:
+def _load_plan(project: dict[str, Any]) -> dict[str, Any] | None:
+    path = _batch_dir(project) / "plan.json"
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+
+def _prompt_for(index: int, shot: dict[str, Any], *, style_prefix: str, negative: str) -> str:
     return (
-        f"{STYLE_PREFIX}第{index}个连续镜头，时长10秒。{shot['visual']}"
-        f"运镜克制，主体动作自然连贯。环境声：{shot['audio']}{NEGATIVE}"
+        f"{style_prefix}第{index}个连续镜头，时长10秒，不要内部切镜。{shot['visual']}"
+        f"动作顺序清楚，主体动作自然连贯。环境声：{shot['audio']}{negative}"
     )
+
+
+def _batch_profile(project: dict[str, Any], target_duration: int) -> dict[str, Any]:
+    title = str(project.get("title") or "")
+    if target_duration == 60 and "便利店" in title:
+        return {
+            "blueprints": DREAM_SHOT_BLUEPRINTS,
+            "style_prefix": DREAM_STYLE_PREFIX,
+            "negative": DREAM_NEGATIVE,
+            "genre": "都市奇幻",
+            "hooks": [
+                "凌晨两点，巷口的便利店又亮了。",
+                "重逢只卖一瓶，别买第二瓶。",
+                "她看见去世三年的奶奶坐在餐桌边。",
+            ],
+            "beats": [
+                {"label": "钩子", "text": "林夏带着奶奶的旧照片进入凌晨便利店。"},
+                {"label": "规则", "text": "店员给她一瓶重逢饮料，提醒别买第二瓶。"},
+                {"label": "反转", "text": "她在梦中见到去世三年的奶奶。"},
+                {"label": "警示", "text": "奶奶说第二瓶会让她把林夏留在梦里。"},
+                {"label": "发现", "text": "醒来后留下的是三年前的收据和照片。"},
+                {"label": "结尾", "text": "第二瓶贴着奶奶的照片，昨夜真正做梦的是奶奶。"},
+            ],
+            "quota_units": 12,
+            "daily_seconds": 60,
+            "safe_name": "dream_store",
+        }
+    if target_duration == 50:
+        return {
+            "blueprints": SHOT_BLUEPRINTS,
+            "style_prefix": STYLE_PREFIX,
+            "negative": NEGATIVE,
+            "genre": "悬疑",
+            "hooks": [
+                "末班地铁停在一个不存在的站。",
+                "广播里忽然报出她的名字。",
+                "明天的报纸，写着今晚的失踪。",
+            ],
+            "beats": [
+                {"label": "钩子", "text": "末班地铁驶入不存在的站。"},
+                {"label": "冲突", "text": "广播叫出她的名字，陌生男人出现。"},
+                {"label": "反转", "text": "报纸头条写着她今晚失踪。"},
+                {"label": "悬念", "text": "她的手正在透明化。"},
+                {"label": "结尾", "text": "废弃站台写着她的名字。"},
+            ],
+            "quota_units": 10,
+            "daily_seconds": 50,
+            "safe_name": "last_train",
+        }
+    raise DoubaoBatchError("豆包任务目前支持 50 秒或便利店项目 60 秒方案")
 
 
 def build_batch(project_id: str, *, target_duration: int = 50) -> dict[str, Any]:
     project = _project(project_id)
-    if target_duration != int(TARGET_DURATION):
-        raise DoubaoBatchError("豆包免费额度任务固定为 5 个 10 秒镜头，总长 50 秒")
     if project.get("rights_status") not in {"owned", "authorized"}:
         raise DoubaoBatchError("请先确认文本为自有或已授权")
-
+    profile = _batch_profile(project, int(target_duration))
+    blueprints = profile["blueprints"]
+    shot_count = len(blueprints)
+    total_duration = shot_count * SHOT_DURATION
     batch_dir = _batch_dir(project)
     segments_dir = _segments_dir(project)
     segments_dir.mkdir(parents=True, exist_ok=True)
@@ -128,7 +241,7 @@ def build_batch(project_id: str, *, target_duration: int = 50) -> dict[str, Any]
 
     shots: list[dict[str, Any]] = []
     prompts: list[str] = []
-    for index, blueprint in enumerate(SHOT_BLUEPRINTS, start=1):
+    for index, blueprint in enumerate(blueprints, start=1):
         shot = {
             "id": f"shot-{index:02d}",
             "duration": SHOT_DURATION,
@@ -137,28 +250,23 @@ def build_batch(project_id: str, *, target_duration: int = 50) -> dict[str, Any]
             "narration": blueprint["narration"],
             "visual": blueprint["visual"],
             "audio": blueprint["audio"],
-            "keywords": ["metro", "suspense", "cinematic", "vertical"],
+            "keywords": ["realistic", "short-drama", "cinematic", "vertical", profile["safe_name"]],
         }
-        shot["seedance_prompt"] = _prompt_for(index, shot)
+        shot["seedance_prompt"] = _prompt_for(
+            index,
+            shot,
+            style_prefix=profile["style_prefix"],
+            negative=profile["negative"],
+        )
         shot["segment_path"] = str((segments_dir / f"shot-{index:02d}.mp4").resolve())
         shots.append(shot)
         prompts.append(f"镜头 {index}：{blueprint['title']}\n{shot['seedance_prompt']}")
 
     script = {
-        "title": project.get("title") or "最后一班地铁",
-        "genre": project.get("genre") or "悬疑",
-        "hooks": [
-            "末班地铁停在一个不存在的站。",
-            "广播里忽然报出她的名字。",
-            "明天的报纸，写着今晚的失踪。",
-        ],
-        "beats": [
-            {"label": "钩子", "text": "末班地铁驶入不存在的站。"},
-            {"label": "冲突", "text": "广播叫出她的名字，陌生男人出现。"},
-            {"label": "反转", "text": "报纸头条写着她今晚失踪。"},
-            {"label": "悬念", "text": "她的手正在透明化。"},
-            {"label": "结尾", "text": "废弃站台写着她的名字。"},
-        ],
+        "title": project.get("title") or "",
+        "genre": project.get("genre") or profile["genre"],
+        "hooks": profile["hooks"],
+        "beats": profile["beats"],
         "narration": " ".join(shot["narration"] for shot in shots),
         "shots": shots,
         "doubao_batch": True,
@@ -172,29 +280,30 @@ def build_batch(project_id: str, *, target_duration: int = 50) -> dict[str, Any]
         "aspect_ratio": ASPECT_RATIO,
         "generation_resolution": GENERATION_RESOLUTION,
         "final_resolution": f"{FINAL_WIDTH}x{FINAL_HEIGHT}",
-        "shot_count": SHOT_COUNT,
+        "shot_count": shot_count,
         "duration_per_shot": SHOT_DURATION,
-        "target_duration": TARGET_DURATION,
-        "estimated_quota_units": SHOT_COUNT * ESTIMATED_UNITS_PER_10S,
-        "free_daily_quota_units": FREE_DAILY_QUOTA_UNITS,
-        "conservative_daily_seconds": 50,
+        "target_duration": total_duration,
+        "estimated_quota_units": profile["quota_units"],
+        "free_daily_quota_units": profile["quota_units"],
+        "conservative_daily_seconds": profile["daily_seconds"],
+        "quota_note": "官方未公开精确换算；本次按用户指定目标申请免费额度，实际成功条数以豆包客户端为准。",
         "segments_dir": str(segments_dir.resolve()),
         "created_at": _now_iso(),
         "shots": shots,
     }
     (batch_dir / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
     (batch_dir / "prompts.md").write_text(
-        "# 《最后一班地铁》豆包 50 秒任务包\n\n"
+        f"# 《{project.get('title') or ''}》豆包 {int(total_duration)} 秒任务包\n\n"
         "模型：Seedance 2.0 Mini\n\n"
-        "生成规格：竖屏 9:16、720p、每个镜头 10 秒、共 5 条\n\n"
+        f"生成规格：竖屏 9:16、720p、每个镜头 10 秒、共 {shot_count} 条\n\n"
         + "\n\n---\n\n".join(prompts)
-        + "\n\n保存文件名必须是 shot-01.mp4 到 shot-05.mp4。\n",
+        + f"\n\n保存文件名必须是 shot-01.mp4 到 shot-{shot_count:02d}.mp4。\n",
         encoding="utf-8",
     )
 
     project = db.update_project(
         project_id,
-        target_duration=int(TARGET_DURATION),
+        target_duration=int(total_duration),
         script=script,
         shots=shots,
         decision="approved",
@@ -265,6 +374,7 @@ def status(project_id: str) -> dict[str, Any]:
         except json.JSONDecodeError:
             plan = None
     paths = expected_segment_paths(project_id)
+    planned_count = int(plan.get("shot_count") or len(plan.get("shots") or []) or SHOT_COUNT) if plan else len(paths)
     segments: list[dict[str, Any]] = []
     for index, path in enumerate(paths, start=1):
         item: dict[str, Any] = {"shot_id": f"shot-{index:02d}", "path": str(path.resolve()), "exists": path.is_file()}
@@ -296,13 +406,13 @@ def status(project_id: str) -> dict[str, Any]:
         "segments": segments,
         "valid_count": len(valid_segments),
         "missing": missing,
-        "ready_to_import": len(valid_segments) == SHOT_COUNT,
+        "ready_to_import": len(valid_segments) == planned_count,
         "imported_count": len(imported_shots),
         "imported_shots": imported_shots,
-        "ready_to_render": len(valid_segments) == SHOT_COUNT and len(imported_shots) == SHOT_COUNT,
-        "estimated_quota_units": SHOT_COUNT * ESTIMATED_UNITS_PER_10S,
-        "free_daily_quota_units": FREE_DAILY_QUOTA_UNITS,
-        "quota_note": "官方未公开精确换算；按 10 秒约 2 额度、每天约 10 额度保守估算，约 50 秒/天。",
+        "ready_to_render": len(valid_segments) == planned_count and len(imported_shots) == planned_count,
+        "estimated_quota_units": int(plan.get("estimated_quota_units") or planned_count * ESTIMATED_UNITS_PER_10S) if plan else SHOT_COUNT * ESTIMATED_UNITS_PER_10S,
+        "free_daily_quota_units": int(plan.get("free_daily_quota_units") or FREE_DAILY_QUOTA_UNITS) if plan else FREE_DAILY_QUOTA_UNITS,
+        "quota_note": (plan.get("quota_note") if plan else "官方未公开精确换算，实际成功条数以豆包客户端为准。"),
     }
 
 
@@ -318,7 +428,7 @@ def import_segments(project_id: str) -> dict[str, Any]:
     project = _project(project_id)
     state = status(project_id)
     if not state["planned"]:
-        raise DoubaoBatchError("请先生成豆包 50 秒任务包")
+        raise DoubaoBatchError("请先生成豆包任务包")
     if not state["ready_to_import"]:
         raise DoubaoBatchError("片段不完整或无法解码，缺少：" + "、".join(state["missing"]))
     imported = 0
@@ -457,11 +567,11 @@ def _concat_media(paths: list[Path], output: Path, *, audio_only: bool = False) 
     )
 
 
-def _normalize_voice(path: Path, output: Path) -> None:
+def _normalize_voice(path: Path, output: Path, *, duration: float = SHOT_DURATION) -> None:
     _run_ffmpeg(
         [
             config.ffmpeg_executable(), "-y", "-i", str(path), "-af",
-            f"aresample=48000,apad,atrim=0:{SHOT_DURATION}",
+            f"aresample=48000,apad,atrim=0:{duration}",
             "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", str(output),
         ],
         cwd=output.parent,
@@ -477,48 +587,54 @@ def render_batch(project_id: str) -> dict[str, Any]:
             project = _project(project_id)
             state = status(project_id)
         if not state["ready_to_render"]:
-            raise DoubaoBatchError("5 个豆包片段尚未全部导入，当前缺少：" + "、".join(state["missing"]))
+            raise DoubaoBatchError("豆包片段尚未全部导入，当前缺少：" + "、".join(state["missing"]))
 
     batch_dir = _batch_dir(project)
     work_dir = batch_dir / "render"
     work_dir.mkdir(parents=True, exist_ok=True)
     shots = project.get("shots") or (state.get("plan") or {}).get("shots") or []
-    if len(shots) != SHOT_COUNT:
-        raise DoubaoBatchError("项目分镜不是 5 个镜头，请重新准备豆包任务包")
+    planned_count = int((state.get("plan") or {}).get("shot_count") or len(shots))
+    if len(shots) != planned_count:
+        raise DoubaoBatchError("项目分镜数量与豆包任务包不一致，请重新准备任务包")
+    if len(state["segments"]) != planned_count:
+        raise DoubaoBatchError("豆包片段数量与任务包不一致")
+    target_duration = sum(max(1.0, float(shot.get("duration", SHOT_DURATION))) for shot in shots)
 
     warnings: list[str] = []
     clips: list[Path] = []
     voice_parts: list[Path] = []
     for index, (shot, segment) in enumerate(zip(shots, state["segments"]), start=1):
         source = Path(segment["path"])
+        shot_duration = max(1.0, float(shot.get("duration", SHOT_DURATION)))
         clip = work_dir / f"clip-{index:02d}.mp4"
-        _render_clip(source, clip, duration=SHOT_DURATION)
+        _render_clip(source, clip, duration=shot_duration)
         clips.append(clip)
         raw_voice = work_dir / f"voice-{index:02d}.mp3"
         voice_path, warning = asyncio.run(
             media.synthesize_voice(
                 str(shot.get("narration") or ""),
                 raw_voice,
-                SHOT_DURATION,
-                voice="zh-CN-YunxiNeural",
+                shot_duration,
+                voice="zh-CN-XiaoxiaoNeural",
                 rate="+3%",
             )
         )
         if warning:
             warnings.append(warning)
         normalized_voice = work_dir / f"voice-{index:02d}.wav"
-        _normalize_voice(voice_path, normalized_voice)
+        _normalize_voice(voice_path, normalized_voice, duration=shot_duration)
         voice_parts.append(normalized_voice)
 
     native = work_dir / "native-joined.mp4"
     _concat_media(clips, native)
     voice = work_dir / "voice-joined.wav"
     _concat_media(voice_parts, voice, audio_only=True)
-    bgm = generate_original_bgm(Path(project["folder"]) / "bgm.wav", duration=TARGET_DURATION)
+    bgm = generate_original_bgm(Path(project["folder"]) / "bgm.wav", duration=target_duration)
     srt_path = work_dir / "subtitles.srt"
     media.write_srt(shots, srt_path)
 
-    final = work_dir / "last_train_50s_1080x1920.mp4"
+    stem = "dream_store_60s" if planned_count == 6 else "last_train_50s"
+    final = work_dir / f"{stem}_1080x1920.mp4"
     subtitle_filter = (
         "subtitles=subtitles.srt:force_style='FontName=Microsoft YaHei,FontSize=17,"
         "PrimaryColour=&HFFFFFF&,OutlineColour=&H101010&,BorderStyle=1,Outline=2,"
@@ -527,15 +643,15 @@ def render_batch(project_id: str) -> dict[str, Any]:
     mix_filter = (
         f"[0:v]{subtitle_filter}[v];"
         "[0:a]volume=0.72[native];"
-        f"[1:a]volume=1.15,apad=whole_dur={TARGET_DURATION}[voice];"
-        f"[2:a]volume=0.22,atrim=0:{TARGET_DURATION}[bg];"
+        f"[1:a]volume=1.15,apad=whole_dur={target_duration}[voice];"
+        f"[2:a]volume=0.22,atrim=0:{target_duration}[bg];"
         "[native][voice][bg]amix=inputs=3:duration=longest:normalize=0,"
         "alimiter=limit=0.95,aresample=48000[a]"
     )
     cmd = [
         config.ffmpeg_executable(), "-y", "-i", str(native), "-i", str(voice),
         "-stream_loop", "-1", "-i", str(bgm), "-filter_complex", mix_filter,
-        "-map", "[v]", "-map", "[a]", "-t", str(TARGET_DURATION),
+        "-map", "[v]", "-map", "[a]", "-t", str(target_duration),
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
         "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
         "-movflags", "+faststart", str(final),
@@ -546,15 +662,15 @@ def render_batch(project_id: str) -> dict[str, Any]:
         warnings.append(f"字幕或混音合成失败，尝试无字幕回退：{exc}")
         fallback_filter = (
             "[0:a]volume=0.72[native];"
-            f"[1:a]volume=1.15,apad=whole_dur={TARGET_DURATION}[voice];"
-            f"[2:a]volume=0.22,atrim=0:{TARGET_DURATION}[bg];"
+            f"[1:a]volume=1.15,apad=whole_dur={target_duration}[voice];"
+            f"[2:a]volume=0.22,atrim=0:{target_duration}[bg];"
             "[native][voice][bg]amix=inputs=3:duration=longest:normalize=0,"
             "alimiter=limit=0.95,aresample=48000[a]"
         )
         fallback = [
             config.ffmpeg_executable(), "-y", "-i", str(native), "-i", str(voice),
             "-stream_loop", "-1", "-i", str(bgm), "-filter_complex", fallback_filter,
-            "-map", "0:v:0", "-map", "[a]", "-t", str(TARGET_DURATION),
+            "-map", "0:v:0", "-map", "[a]", "-t", str(target_duration),
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
             "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
             "-movflags", "+faststart", str(final),

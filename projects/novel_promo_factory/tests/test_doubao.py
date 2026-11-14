@@ -144,3 +144,24 @@ def test_import_accepts_local_fallback_sidecar_without_mislabeling_it(tmp_path, 
     fallback = next(asset for asset in selected if asset["shot_id"] == "shot-05")
     assert fallback["provider"] == "local_fallback"
     assert fallback["author"] == "本地后期"
+
+def test_build_dream_store_sixty_second_batch(tmp_path, monkeypatch):
+    setup_db(tmp_path, monkeypatch)
+    project = db.create_project(
+        title="会替人做梦的便利店",
+        genre="奇幻",
+        source_text="凌晨便利店能替人做梦，女孩买了一瓶重逢。",
+        rights_status="owned",
+        target_duration=30,
+    )
+    result = doubao.build_batch(project["id"], target_duration=60)
+
+    assert result["plan"]["shot_count"] == 6
+    assert result["plan"]["target_duration"] == 60
+    assert len(result["project"]["shots"]) == 6
+    assert all(shot["duration"] == 10 for shot in result["project"]["shots"])
+    assert "便利店" in result["plan"]["title"]
+    assert "非CGI" in result["plan"]["shots"][0]["seedance_prompt"]
+    assert "冷绿烟雾" in result["plan"]["shots"][0]["seedance_prompt"]
+    assert len(doubao.expected_segment_paths(project["id"])) == 6
+

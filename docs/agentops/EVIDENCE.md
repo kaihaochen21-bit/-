@@ -466,57 +466,31 @@ cd projects\novel_promo_factory
 - 复验命令：全量 `69 passed`；API `SHORTLIST=3 INSTALLS=1`；最新日报不再包含“不自动安装任何第三方 Skill”的矛盾表述。
 - 独立 tester 复验：原报告 14/14 个反例全部 PASS；全量 `69 passed in 21.89s`。
 - 额外加固：脚本危险模式扫描覆盖完整文本文件（不再截断 200KB）；ZIP 改为流式解压并按实际字节计数，超过 25MB 立即中止，避免仅信任归档头。
-
-## TASK-025：AI 短剧雷达自动精选与安全安装
-
-- 状态：DONE（本地验证）
-- 分支：`codex/TASK-025-radar-auto-curation`
-- 测试：`python -m pytest -q` → `69 passed`
-- Python 编译：radar、radar_curation、radar_cli、main、db、config 全部通过
-- JavaScript：`node --check app/static/app.js` 通过
-- API：dashboard 返回 3 项精选和 1 条安装记录；`POST /api/radar/curate` 返回精选结果
-- 实际自动安装：
-  - 仓库：`A-cat-with-carrots/OnlyShot`
-  - Skill：`ai-short-drama`
-  - 路径：`C:\Users\陈楷浩\.codex\skills\ai-short-drama`
-  - 许可证：MIT
-  - 文件：62 个
-  - 安装说明：通过静态危险模式检查；安装不执行脚本
-- 日报：`data/radar/reports/2026-11-14.md` 和 HTML 版包含自动精选与安装记录
-- 安全限制：
-  - 每日最多安装 1 个新 Skill
-  - 只安装根目录存在 `SKILL.md` 的标准 Skill
-  - 拒绝许可证不明、超规模、路径穿越、符号链接和高风险提示模式
-  - 安装只复制文件，不执行仓库脚本
-- 独立 tester 发现的边界问题已修复并补回归：同日精选严格替换、69 分不安装、脚本内容危险模式扫描、ZIP 符号链接/解压前规模检查、按本地日期全局限制每日 1 个安装、计划任务和扫描 API 均启用/返回自动精选。
-- 复验命令：全量 `69 passed`；API `SHORTLIST=3 INSTALLS=1`；最新日报不再包含“不自动安装任何第三方 Skill”的矛盾表述。
-- 独立 tester 复验：原报告 14/14 个反例全部 PASS；全量 `69 passed in 21.89s`。
-- 额外加固：脚本危险模式扫描覆盖完整文本文件（不再截断 200KB）；ZIP 改为流式解压并按实际字节计数，超过 25MB 立即中止，避免仅信任归档头。
-- Git 推送：本地提交 `79bc376`；`origin/codex/TASK-025-radar-auto-curation` 推送连续 3 次失败（GitHub HTTPS 连接重置/443 超时），远程状态未更新，待网络恢复后重试。
-
-## TASK-025：AI 短剧雷达自动精选与安全安装
-
-- 状态：DONE（本地验证）
-- 分支：`codex/TASK-025-radar-auto-curation`
-- 测试：`python -m pytest -q` → `69 passed`
-- Python 编译：radar、radar_curation、radar_cli、main、db、config 全部通过
-- JavaScript：`node --check app/static/app.js` 通过
-- API：dashboard 返回 3 项精选和 1 条安装记录；`POST /api/radar/curate` 返回精选结果
-- 实际自动安装：
-  - 仓库：`A-cat-with-carrots/OnlyShot`
-  - Skill：`ai-short-drama`
-  - 路径：`C:\Users\陈楷浩\.codex\skills\ai-short-drama`
-  - 许可证：MIT
-  - 文件：62 个
-  - 安装说明：通过静态危险模式检查；安装不执行脚本
-- 日报：`data/radar/reports/2026-11-14.md` 和 HTML 版包含自动精选与安装记录
-- 安全限制：
-  - 每日最多安装 1 个新 Skill
-  - 只安装根目录存在 `SKILL.md` 的标准 Skill
-  - 拒绝许可证不明、超规模、路径穿越、符号链接和高风险提示模式
-  - 安装只复制文件，不执行仓库脚本
-- 独立 tester 发现的边界问题已修复并补回归：同日精选严格替换、69 分不安装、脚本内容危险模式扫描、ZIP 符号链接/解压前规模检查、按本地日期全局限制每日 1 个安装、计划任务和扫描 API 均启用/返回自动精选。
-- 复验命令：全量 `69 passed`；API `SHORTLIST=3 INSTALLS=1`；最新日报不再包含“不自动安装任何第三方 Skill”的矛盾表述。
-- 独立 tester 复验：原报告 14/14 个反例全部 PASS；全量 `69 passed in 21.89s`。
-- 额外加固：脚本危险模式扫描覆盖完整文本文件（不再截断 200KB）；ZIP 改为流式解压并按实际字节计数，超过 25MB 立即中止，避免仅信任归档头。
 - Git 推送：本地提交 `79bc376` + `5e11e3d`；`origin/codex/TASK-025-radar-auto-curation` 推送连续 3 次失败（GitHub HTTPS 连接重置/443 超时），远程状态未更新，待网络恢复后重试。
+
+## TASK-026：会替人做梦的便利店 60 秒发布版（2026-11-14）
+
+- 豆包恢复核验：缓存索引中当天可确认的独立视频 URL 为 4 条，对应 20:28、20:36、20:41、20:48；均为 10.08 秒、720×1280、H.264+AAC。
+- 4 个豆包片段 SHA-256：
+  - `5860628366c0c9ce64ac5a6e26694f1f60bccbaae2150cc0571393c3aebc4b93`
+  - `020709b1c19f818463222c046239704bd25b5cc534364044acd8dea669fdcb0e`
+  - `858cbb1169b509b4c00e976348f69ca3979b17f339f7b7fb9fd6da445f8d1125`
+  - `47cb5f20231fb96397ee0ba5cb59d94528916a8e8671768c065ce1bd6d0399f7`
+- 修复错位：原 `shot-02`/`shot-03`/`shot-04` 存在缓存重复或错位；已按独立 CDN URL 重新落盘。
+- 本地补镜：
+  - `shot-05.mp4` 为收据/老店照片记忆插入，10.0 秒、1080×1920。
+  - `shot-06.mp4` 为收尾标题卡，10.0 秒、1080×1920。
+  - 两段均写入 `source_manifest.json`，不标注为豆包生成。
+- 网站链路：`/doubao/import` 导入 6/6；`/doubao/render` 输出 `dream_store_60s_1080x1920.mp4`，时长 60.01 秒。
+- 声音链路：`/sound/generate` 强制重生成后 6/6 旁白 Provider 均为 `melotts`；音乐/音效回退 `local_synth`。
+- 发布成片：
+  - 时长 60.10 秒
+  - 1080×1920、30fps、H.264 High
+  - AAC-LC、48kHz、双声道、192kb/s
+  - 全片 FFmpeg 解码返回 0，无错误输出
+  - 集成响度 -17.4 LUFS，True Peak -1.5 dBFS
+  - SHA-256：`6dda44a005a36ec1da469e03da9518550d4d682179de7879c05a6fc88d353788`
+- 六镜头抽帧哈希两两不同，未发现整段重复画面。
+- 自动化测试：`69 passed in 22.30s`；`node --check app/static/app.js` 通过。
+- 额度：豆包客户端明确提示“今日视频生成免费额度已用完”，未购买订阅、未调用付费 API。
+
