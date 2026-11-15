@@ -364,3 +364,5 @@
   - 豆包 Skill 显示已安装并返回真实路径。
   - 固定口令复制功能可用。
   - `70 passed`，JavaScript 语法检查通过，浏览器四页签冒烟通过。
+
+- Git：本地提交 `cd30bb5`；推送 `origin/codex/TASK-028-ai-drama-workspace` 因 GitHub HTTPS 连接重置失败，远程分支尚未更新。

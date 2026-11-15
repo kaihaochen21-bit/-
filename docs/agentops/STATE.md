@@ -244,3 +244,4 @@
 - 长期工作说明：`docs/agentops/WORKSPACE.md`
 - 当前界面状态：5 个项目；雷达 30 未读、4 个优先；豆包 Skill 已安装。
 - 测试：`70 passed in 32.40s`；浏览器总览、项目页、GitHub 页、豆包页和复制指令均通过。
+- Git：本地提交 `cd30bb5`；远程推送因 GitHub HTTPS 连接重置失败，待网络恢复后重试。
