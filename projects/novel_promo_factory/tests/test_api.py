@@ -75,3 +75,25 @@ def test_workspace_landing_and_skill_status(tmp_path, monkeypatch):
         skill = health.json()["ai_short_drama_skill"]
         assert skill["installed"] is True
         assert skill["path"].endswith("ai-short-drama")
+
+
+def test_doubao_handoff_api(tmp_path, monkeypatch):
+    monkeypatch.setenv("NOVEL_PROMO_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("NOVEL_PROMO_CONTENT_DIR", str(tmp_path / "content"))
+    monkeypatch.setenv("NOVEL_PROMO_ASSETS_DIR", str(tmp_path / "assets"))
+    with TestClient(app) as client:
+        project = client.post("/api/projects", json={
+            "title": "省钱试片接口",
+            "genre": "都市",
+            "source_text": "她推开便利店的门，发现桌上放着一封旧信。",
+            "rights_status": "owned",
+            "target_duration": 30,
+            "budget_limit_cny": 20,
+        }).json()
+        assert client.post(f"/api/projects/{project['id']}/script/auto").status_code == 200
+        response = client.post(f"/api/projects/{project['id']}/doubao/handoff", json={"pilot": True})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["mode"] == "pilot"
+        assert data["shot_count"] == 1
+        assert data["estimated_quota_units"] == 2

@@ -328,6 +328,193 @@ def build_batch(project_id: str, *, target_duration: int = 50) -> dict[str, Any]
     }
 
 
+def _handoff_dir(project: dict[str, Any]) -> Path:
+    return Path(project["folder"]) / "doubao_handoff"
+
+
+def _handoff_prompt(shot: dict[str, Any], index: int) -> str:
+    existing = str(shot.get("seedance_prompt") or shot.get("video_prompt") or "").strip()
+    if existing:
+        return existing
+    title = str(shot.get("title") or f"镜头{index}").strip()
+    visual = str(shot.get("visual") or shot.get("prompt") or shot.get("narration") or title).strip()
+    camera = str(shot.get("camera") or shot.get("shot_type") or "").strip()
+    audio = str(shot.get("audio") or shot.get("sound") or "保留自然环境声，不要额外人声。").strip()
+    duration = float(shot.get("duration") or SHOT_DURATION)
+    camera_text = f"镜头语言：{camera}。" if camera else "单一连续动作，不切内部镜头。"
+    return (
+        f"竖屏9:16，720p，写实电影短剧，第{index}个连续镜头，时长{duration:g}秒。"
+        f"{visual}{camera_text}保持人物外观、服装、场景和道具连续，手部和面部结构自然。"
+        f"环境声：{audio}画面不要字幕、水印、logo、可读品牌文字，不要卡通风格。"
+    )
+
+
+def handoff_status(project: dict[str, Any]) -> dict[str, Any]:
+    folder = _handoff_dir(project)
+    manifest_path = folder / "handoff.json"
+    if not manifest_path.is_file():
+        return {"prepared": False}
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"prepared": False, "error": "handoff.json 无法解析"}
+    shots = manifest.get("shots") or []
+    outputs = []
+    for shot in shots:
+        path = Path(str(shot.get("output_path") or ""))
+        item = {**shot, "exists": path.is_file(), "valid": False}
+        if path.is_file():
+            try:
+                item.update(_probe_video(path))
+                item["valid"] = True
+            except Exception as exc:
+                item["error"] = str(exc)
+        outputs.append(item)
+    return {
+        **manifest,
+        "prepared": True,
+        "manifest_path": str(manifest_path.resolve()),
+        "prompts_path": str((folder / "prompts.md").resolve()),
+        "outputs": outputs,
+        "ready_count": sum(1 for item in outputs if item.get("valid")),
+    }
+
+
+def build_handoff(project_id: str, *, pilot: bool = True) -> dict[str, Any]:
+    """Create a copy/paste packet for manual Doubao generation.
+
+    This mode never calls Doubao or a paid API. It only writes a prompt card for
+    the first shot (pilot) or all existing project shots (full handoff).
+    """
+    project = _project(project_id)
+    if project.get("rights_status") not in {"owned", "authorized"}:
+        raise DoubaoBatchError("请先确认文本为自有或已授权")
+    shots = project.get("shots") or (project.get("script") or {}).get("shots") or []
+    if not shots:
+        raise DoubaoBatchError("请先生成脚本和分镜，再准备豆包省钱任务包")
+    selected = list(shots[:1] if pilot else shots)
+    folder = _handoff_dir(project)
+    folder.mkdir(parents=True, exist_ok=True)
+    _segments_dir(project).mkdir(parents=True, exist_ok=True)
+    prompt_items: list[dict[str, Any]] = []
+    for index, shot in enumerate(selected, start=1):
+        prompt = _handoff_prompt(shot, index)
+        shot_id = f"shot-{index:02d}"
+        output_path = (_segments_dir(project) / f"{shot_id}.mp4").resolve()
+        prompt_items.append(
+            {
+                "shot_id": shot_id,
+                "title": str(shot.get("title") or shot_id),
+                "duration": float(shot.get("duration") or SHOT_DURATION),
+                "prompt": prompt,
+                "output_path": str(output_path),
+            }
+        )
+    estimated_units = len(prompt_items) * ESTIMATED_UNITS_PER_10S
+    manifest = {
+        "provider": "doubao_manual",
+        "mode": "pilot" if pilot else "full",
+        "mode_label": "1 镜省钱试片" if pilot else "整片手动拆镜",
+        "project_id": project_id,
+        "title": project.get("title"),
+        "model": MODEL_NAME,
+        "aspect_ratio": ASPECT_RATIO,
+        "resolution": GENERATION_RESOLUTION,
+        "duration_per_shot": SHOT_DURATION,
+        "shot_count": len(prompt_items),
+        "estimated_quota_units": estimated_units,
+        "estimated_duration_seconds": len(prompt_items) * SHOT_DURATION,
+        "created_at": _now_iso(),
+        "stop_after_pilot": bool(pilot),
+        "note": "手动粘贴生成，不使用 Computer Use；第一条验收通过后再生成其余镜头。",
+        "shots": prompt_items,
+    }
+    (folder / "handoff.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    lines = [
+        f"# 《{project.get('title') or ''}》豆包省钱任务包",
+        "",
+        f"- 模式：{manifest['mode_label']}",
+        f"- 模型：{MODEL_NAME}",
+        f"- 规格：{ASPECT_RATIO} / {GENERATION_RESOLUTION} / 每镜 {SHOT_DURATION:g} 秒",
+        f"- 预计额度：约 {estimated_units} 个豆包额度单位（官方换算可能变化）",
+        f"- 本次只准备 {len(prompt_items)} 条提示词，不自动操作豆包。",
+        "",
+        "## 操作规则",
+        "",
+        "1. 在豆包桌面端选择 Seedance 2.0 Mini、10 秒、9:16。",
+        "2. 只粘贴下一条提示词，先生成第一镜。",
+        "3. 将结果保存到提示的完整路径，文件名为 shot-01.mp4。",
+        "4. 回到工作台导入片段并检查画面；不要一次生成剩余镜头。",
+        "5. 第一条通过后，再准备整片任务包。",
+        "",
+    ]
+    for item in prompt_items:
+        lines += [
+            f"## {item['shot_id']} · {item['title']}",
+            "",
+            item["prompt"],
+            "",
+            f"保存到：{item['output_path']}",
+            "",
+            "---",
+            "",
+        ]
+    (folder / "prompts.md").write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "ok": True,
+        "project_id": project_id,
+        "mode": manifest["mode"],
+        "mode_label": manifest["mode_label"],
+        "shot_count": len(prompt_items),
+        "estimated_quota_units": estimated_units,
+        "prompt": prompt_items[0]["prompt"],
+        "output_path": prompt_items[0]["output_path"],
+        "handoff_path": str((folder / "handoff.json").resolve()),
+        "prompts_path": str((folder / "prompts.md").resolve()),
+        "manifest": manifest,
+        "note": manifest["note"],
+    }
+
+
+def import_handoff(project_id: str) -> dict[str, Any]:
+    project = _project(project_id)
+    handoff = handoff_status(project)
+    if not handoff.get("prepared"):
+        raise DoubaoBatchError("请先准备 1 镜省钱试片")
+    ready = [item for item in handoff.get("outputs") or [] if item.get("valid")]
+    if not ready:
+        raise DoubaoBatchError("还没有检测到可解码的首镜文件，请先保存 shot-01.mp4")
+    existing = {(asset.get("provider"), str(Path(asset.get("path") or "").resolve())): asset for asset in project.get("assets") or []}
+    imported = 0
+    for segment in ready:
+        source = Path(segment["path"])
+        key = ("doubao", str(source.resolve()))
+        asset = existing.get(key)
+        if asset:
+            asset_id = int(asset["id"])
+        else:
+            asset_id = db.add_asset(
+                project_id,
+                segment["shot_id"],
+                "video",
+                "doubao",
+                str(source),
+                author=MODEL_NAME,
+                license="AI Generated",
+                downloaded_at=db.now_iso(),
+                sha256=_sha256(source),
+                width=int(segment.get("width") or 0),
+                height=int(segment.get("height") or 0),
+                duration=float(segment.get("duration") or 0),
+                selected=True,
+                metadata={"model": MODEL_NAME, "source": "manual pilot handoff", "shot_id": segment["shot_id"]},
+            )
+            imported += 1
+        db.select_asset(project_id, segment["shot_id"], asset_id)
+    db.update_project(project_id, status="doubao_imported")
+    return {"ok": True, "imported": imported, "project": db.get_project(project_id) or project, "handoff": handoff_status(project)}
+
+
 def _probe_video(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise DoubaoBatchError(f"缺少片段：{path.name}")
@@ -413,6 +600,7 @@ def status(project_id: str) -> dict[str, Any]:
         "estimated_quota_units": int(plan.get("estimated_quota_units") or planned_count * ESTIMATED_UNITS_PER_10S) if plan else SHOT_COUNT * ESTIMATED_UNITS_PER_10S,
         "free_daily_quota_units": int(plan.get("free_daily_quota_units") or FREE_DAILY_QUOTA_UNITS) if plan else FREE_DAILY_QUOTA_UNITS,
         "quota_note": (plan.get("quota_note") if plan else "官方未公开精确换算，实际成功条数以豆包客户端为准。"),
+        "handoff": handoff_status(project),
     }
 
 

@@ -165,3 +165,50 @@ def test_build_dream_store_sixty_second_batch(tmp_path, monkeypatch):
     assert "冷绿烟雾" in result["plan"]["shots"][0]["seedance_prompt"]
     assert len(doubao.expected_segment_paths(project["id"])) == 6
 
+
+def test_build_handoff_pilot_uses_project_shots_without_overwriting(tmp_path, monkeypatch):
+    setup_db(tmp_path, monkeypatch)
+    project = make_project()
+    before = db.get_project(project["id"])
+    result = doubao.build_handoff(project["id"], pilot=True)
+    after = db.get_project(project["id"])
+
+    assert result["mode"] == "pilot"
+    assert result["shot_count"] == 1
+    assert result["estimated_quota_units"] == 2
+    assert Path(result["handoff_path"]).is_file()
+    assert Path(result["prompts_path"]).is_file()
+    assert "shot-01.mp4" in result["output_path"]
+    assert result["prompt"]
+    assert after["shots"] == before["shots"]
+    status = doubao.status(project["id"])
+    assert status["handoff"]["prepared"] is True
+    assert status["handoff"]["shot_count"] == 1
+
+
+def test_import_handoff_pilot_links_first_shot(tmp_path, monkeypatch):
+    setup_db(tmp_path, monkeypatch)
+    project = make_project()
+    result = doubao.build_handoff(project["id"], pilot=True)
+    output = Path(result["output_path"])
+    output.write_bytes(b"fake-mp4-video")
+
+    def fake_probe(path: Path):
+        return {
+            "path": str(path.resolve()),
+            "name": path.name,
+            "size": path.stat().st_size,
+            "duration": 10.0,
+            "width": 720,
+            "height": 1280,
+            "has_audio": True,
+        }
+
+    monkeypatch.setattr(doubao, "_probe_video", fake_probe)
+    imported = doubao.import_handoff(project["id"])
+    assert imported["imported"] == 1
+    fresh = db.get_project(project["id"])
+    doubao_assets = [asset for asset in fresh["assets"] if asset["provider"] == "doubao"]
+    assert len(doubao_assets) == 1
+    assert doubao_assets[0]["shot_id"] == "shot-01"
+    assert bool(doubao_assets[0]["selected"]) is True

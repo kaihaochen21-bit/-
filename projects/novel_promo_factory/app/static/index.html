@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI 短剧工作台</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261115workspace">
+  <link rel="stylesheet" href="/static/styles.css?v=20261115handoff">
 </head>
 <body>
   <header class="topbar">
@@ -160,12 +160,15 @@
             </div>
             <span id="doubaoBadge" class="badge">未准备</span>
           </div>
+          <p class="muted">推荐先走“1 镜省钱试片”：工作台只给一条提示词，你手动粘贴到豆包，验收后再生成剩余镜头，不使用 Computer Use。</p>
           <div class="actions">
-            <button data-action="doubao-plan" class="primary">准备豆包任务包</button>
+            <button data-action="doubao-handoff" class="primary">准备 1 镜省钱试片</button>
+            <button data-action="doubao-plan">准备整片任务包</button>
             <button data-action="doubao-import">导入豆包片段</button>
             <button data-action="doubao-render">拼接并加音乐</button>
           </div>
-          <div id="doubaoBox" class="notice">尚未建立豆包任务包。</div>
+          <div id="doubaoHandoffBox" class="notice">尚未准备省钱试片。点击“准备 1 镜省钱试片”后，只需粘贴一条提示词。</div>
+          <div id="doubaoBox" class="notice">尚未建立整片豆包任务包。</div>
         </div>
 
         <div class="doubao-panel sound-panel">
@@ -388,6 +391,6 @@
   </main>
 
   <div id="toast" class="toast"></div>
-  <script src="/static/app.js?v=20261115workspace"></script>
+  <script src="/static/app.js?v=20261115handoff"></script>
 </body>
 </html>

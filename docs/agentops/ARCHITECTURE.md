@@ -122,3 +122,20 @@ Windows localhost
 - 前端使用 hash 路由：`#daily`、`#radar`、`#doubao`。
 - 总览不复制业务数据，只读取现有 projects、radar dashboard 和 health 状态。
 - `WORKSPACE.md` 是对外和对话层的工作契约；`PROJECT.md` 记录当前总目标。
+
+
+## TASK-029：豆包低成本交接架构
+
+```text
+项目分镜
+  → build_handoff(pilot=true)
+  → doubao_handoff/handoff.json + prompts.md
+  → 用户手动粘贴到豆包桌面端
+  → shot-01.mp4
+  → 工作台导入 / 质检
+  → 验收通过后再准备整片
+```
+
+- Handoff 模式不调用豆包 API、不启动浏览器自动化、不修改项目分镜。
+- `status.handoff` 回读任务文件和首镜是否已生成。
+- 全片任务包仍保留原有 `build_batch`，但不再是默认入口。

@@ -86,6 +86,10 @@ class DoubaoPlanCreate(BaseModel):
     target_duration: int = Field(default=50, ge=50, le=60)
 
 
+class DoubaoHandoffCreate(BaseModel):
+    pilot: bool = True
+
+
 class SoundActionRequest(BaseModel):
     force: bool = False
 
@@ -394,6 +398,24 @@ def doubao_plan(project_id: str, payload: DoubaoPlanCreate) -> dict[str, Any]:
     _project_or_404(project_id)
     try:
         return doubao.build_batch(project_id, target_duration=payload.target_duration)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/doubao/handoff")
+def doubao_handoff(project_id: str, payload: DoubaoHandoffCreate) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.build_handoff(project_id, pilot=payload.pilot)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/projects/{project_id}/doubao/handoff/import")
+def doubao_handoff_import(project_id: str) -> dict[str, Any]:
+    _project_or_404(project_id)
+    try:
+        return doubao.import_handoff(project_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

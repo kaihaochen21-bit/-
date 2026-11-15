@@ -366,3 +366,20 @@
   - `70 passed`，JavaScript 语法检查通过，浏览器四页签冒烟通过。
 
 - Git：本地提交 `cd30bb5`；推送 `origin/codex/TASK-028-ai-drama-workspace` 因 GitHub HTTPS 连接重置失败，远程分支尚未更新。
+
+
+## TASK-029：豆包 1 镜省钱试片模式（2026-11-15）
+
+- 状态：VERIFIED_LOCAL
+- 分支：`codex/TASK-029-doubao-low-cost-handoff`
+- 目标：不再用 Computer Use 长时间操作豆包，改成工作台生成一条自包含提示词，用户手动粘贴生成首镜；验收后再准备整片。
+- 实现：
+  - `doubao.build_handoff(pilot=True)` 使用当前项目已有分镜生成 1 条提示词，不覆盖项目原分镜。
+  - 新增 `POST /api/projects/{id}/doubao/handoff`。
+  - 豆包面板增加“准备 1 镜省钱试片”、首镜提示词预览、复制按钮、`shot-01.mp4` 保存路径和“导入首镜”。
+  - 估算首镜约 2 个额度单位；不调用豆包、不调用付费 API、不操作浏览器。
+- 验收：
+  - UI 可在真实项目中生成 1 镜任务包。
+  - 任务文件写入项目目录的 `doubao_handoff/`。
+  - 首镜提示词可复制，状态能回读。
+  - `73 passed`。

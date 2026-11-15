@@ -498,8 +498,41 @@ function renderDetail() {
   renderPosts(project);
 }
 
+function renderHandoff(handoff) {
+  const box = $("#doubaoHandoffBox");
+  if (!box) return;
+  if (!handoff?.prepared) {
+    box.className = "notice";
+    box.innerHTML = "尚未准备省钱试片。点击“准备 1 镜省钱试片”后，只需粘贴一条提示词。";
+    return;
+  }
+  const first = (handoff.shots || [])[0] || {};
+  const ready = Number(handoff.ready_count || 0) > 0;
+  box.className = "notice " + (ready ? "ok" : "");
+  box.innerHTML = `<strong>${esc(handoff.mode_label || "1 镜省钱试片")} · 约 ${Number(handoff.estimated_quota_units || 0)} 个额度单位</strong>
+    <p>先生成这一条，保存为 <code>${esc(first.output_path || "")}</code>。验收通过后再准备整片，避免一次烧完额度。</p>
+    <pre class="handoff-prompt">${esc(first.prompt || "")}</pre>
+    <div class="actions"><button id="copyHandoffPrompt" class="small">复制首镜提示词</button><button id="importPilotShot" class="small" ${ready ? "" : "disabled"}>导入首镜</button></div>
+    <small>${ready ? "首镜文件已检测到，可以导入片段。" : "当前还没有检测到 shot-01.mp4。"}</small>`;
+  const copyButton = $("#copyHandoffPrompt");
+  if (copyButton) copyButton.addEventListener("click", () => copyText(first.prompt || ""));
+  const importButton = $("#importPilotShot");
+  if (importButton) importButton.addEventListener("click", async () => {
+    importButton.disabled = true;
+    try {
+      await api(`/api/projects/${handoff.project_id}/doubao/handoff/import`, { method: "POST" });
+      await selectProject(handoff.project_id);
+      toast("首镜已导入项目");
+    } catch (error) {
+      toast(error.message, true);
+    } finally {
+      importButton.disabled = false;
+    }
+  });
+}
 function renderDoubao(project) {
   const batch = state.doubao && state.doubao.project_id === project.id ? state.doubao : null;
+  renderHandoff(batch?.handoff);
   const badge = $("#doubaoBadge");
   const box = $("#doubaoBox");
   if (!batch || !batch.planned) {
@@ -700,6 +733,7 @@ async function runAction(action) {
     }
     if (action === "render") result = await api(`/api/projects/${id}/render`, { method: "POST" });
     if (action === "package") result = await api(`/api/projects/${id}/package`, { method: "POST" });
+    if (action === "doubao-handoff") result = await api(`/api/projects/${id}/doubao/handoff`, { method: "POST", body: JSON.stringify({ pilot: true }) });
     if (action === "doubao-plan") result = await api(`/api/projects/${id}/doubao/plan`, { method: "POST", body: JSON.stringify({ target_duration: Number(state.current?.target_duration || 50) >= 60 ? 60 : 50 }) });
     if (action === "doubao-import") result = await api(`/api/projects/${id}/doubao/import`, { method: "POST" });
     if (action === "doubao-render") result = await api(`/api/projects/${id}/doubao/render`, { method: "POST" });

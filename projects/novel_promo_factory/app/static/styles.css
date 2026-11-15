@@ -360,3 +360,20 @@ td { color: #d1d8e7; line-height: 1.45; }
   .skill-meta { min-width: 0; max-width: none; }
   .flow-rail { grid-template-columns: 1fr; }
 }
+
+
+.handoff-prompt {
+  margin: 10px 0;
+  padding: 12px 14px;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid #34445d;
+  border-radius: 9px;
+  background: #0b1018;
+  color: #dbe5f7;
+  font-family: Consolas, "Microsoft YaHei", monospace;
+  font-size: 12px;
+  line-height: 1.65;
+}

@@ -540,3 +540,13 @@ cd projects\novel_promo_factory
 - 自动化测试：`70 passed in 32.40s`。
 - JavaScript：`node --check app/static/app.js` 通过。
 - Python：`py_compile app/config.py app/main.py` 通过。
+
+
+## TASK-029：豆包省钱试片验证（2026-11-15）
+
+- 单元测试：`73 passed in 12.51s`。
+- API：`POST /api/projects/f654d4b8a0df/doubao/handoff` 返回 `mode=pilot`、`shot_count=1`、`estimated_quota_units=2`。
+- 生成文件：`content/f654d4b8a0df/doubao_handoff/handoff.json`、`prompts.md`。
+- 预期首镜路径：`content/f654d4b8a0df/doubao_batch/segments/shot-01.mp4`。
+- 浏览器：项目详情显示“准备 1 镜省钱试片”、提示词文本和复制按钮；点击操作生成 JSON 回执。
+- 未调用豆包生成、未使用 Computer Use、未调用付费 API。
