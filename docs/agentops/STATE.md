@@ -211,3 +211,18 @@
 - 质量验证：全片 FFmpeg 解码返回 0；集成响度 -17.4 LUFS；True Peak -1.5 dBFS；六镜哈希均不同。
 - 测试：`69 passed in 22.30s`；`node --check app/static/app.js` 通过。
 
+
+
+## TASK-027 当前结果（2026-11-15）
+
+- 状态：VERIFIED_LOCAL
+- 分支：`codex/TASK-027-deploy-recommended-apps`
+- 本机入口：
+  - Huobao Drama AI：http://127.0.0.1:3001/ → `/zh-CN`
+  - OpenMontage Drama Studio：http://127.0.0.1:8787/
+  - Awesome Short Drama Skills：http://127.0.0.1:3002/
+- 一键入口：`projects/deployed_apps/start_all.bat`；停止：`stop_all.bat`；只开网页：`open_all.bat`。
+- 运行方式：所有服务均为隐藏后台进程，PID 和日志位于 `projects/deployed_apps/run/`。
+- 本地账号：Huobao 已有管理员 `admin@huobao.local`；OpenMontage 使用页面 Demo 登录。
+- 当前未配置付费模型 Key；OpenMontage 的 FFmpeg 健康项为 `false`，因此视频合成链路仍需后续补齐。
+- 下一步：需要时安装便携 FFmpeg，再验证 OpenMontage 的 TTS、剪辑和视频导出链路。

@@ -494,3 +494,36 @@ cd projects\novel_promo_factory
 - 自动化测试：`69 passed in 22.30s`；`node --check app/static/app.js` 通过。
 - 额度：豆包客户端明确提示“今日视频生成免费额度已用完”，未购买订阅、未调用付费 API。
 
+
+
+## TASK-027：三个推荐项目本机部署证据（2026-11-15）
+
+### 运行时
+
+- Node：`v24.22.1`；npm：`11.19.1`；位于 `projects/deployed_apps/.tools/node-v24.22.1-win-x64`。
+- OpenMontage Python：`3.12.10`；虚拟环境位于 `projects/deployed_apps/.venvs/openmontage`。
+- Huobao 依赖安装：`npm ci --ignore-scripts`，未执行第三方 postinstall。
+- OpenMontage 前端：`npm run build` 成功，Vite 生成 `studio/dist`。
+- Awesome：`python scripts/build_site.py` 成功，报告中显示生成 1,325 个页面。
+
+### HTTP 与登录
+
+- `http://127.0.0.1:3001/`：HTTP 200，最终 URL `/zh-CN`。
+- `http://127.0.0.1:3001/api/health`：200；`databaseConnection=OK`、`dbProvider=sqlite`、`dramaModel=OK`。
+- Huobao 管理员 API 登录：200，用户角色 `admin`。
+- `http://127.0.0.1:8787/`：HTTP 200；页面可渲染创作中心、模型配置、项目卡和任务队列。
+- `http://127.0.0.1:8787/api/health`：200；`service=openmontage-drama-studio`、`dist=true`、`postgres.enabled=false`、`mediaQueue.backend=thread_pool`。
+- OpenMontage `POST /api/auth/demo`：200，签发 `omdemo.*` Demo token。
+- `http://127.0.0.1:3002/`：HTTP 200；页面显示 86 个 Skill 项目、16 个平台、按阶段/模型/类型索引。
+
+### 启停回归
+
+- 执行 `stop_all.ps1` 后，3001、3002、8787 均无监听。
+- 执行 `start_all.ps1` 后，三个健康检查全部返回 OK。
+- 统一启动脚本的日志和 PID 文件位于 `projects/deployed_apps/run/`，不进入 Git。
+
+### 已知限制
+
+- OpenMontage `/api/health` 返回 `ffmpeg=false`，因此没有把视频合成和导出标记为已验证。
+- 未配置 Seedream、Seedance、ComfyUI、ARK、Kling 或其他付费生成 Key；没有执行付费调用。
+- 三个入口只在 `127.0.0.1` 提供，不是公网或局域网生产部署。

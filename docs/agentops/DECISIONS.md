@@ -235,3 +235,18 @@
 - 理由：满足完整 60 秒叙事和发布格式，同时避免把重复文件或本地补镜冒充为豆包新生成视频。
 - 影响：本轮成片真实来源为“4 段豆包 + 2 段本地补镜”；豆包额度恢复后可替换第 5、6 镜并重新渲染为纯豆包版本。
 
+
+
+## ADR-2026-11-15-01：三项目采用本机独立服务部署
+
+- 决策：三个推荐项目均部署在本机，使用 `127.0.0.1` 和独立端口，不发布公网、不使用 Docker。
+- 理由：当前 Windows 环境没有 Docker；三个项目可由本地 Node/Python 运行时独立启动，风险更小，也便于随时停止。
+- 端口：Huobao `3001`、OpenMontage `8787`、Awesome 目录 `3002`。
+- 安全边界：启动脚本清除进程内常见付费模型 Key 变量；不执行第三方 `postinstall`；只运行已审查的 Prisma/Next/Vite 命令。
+- 仓库边界：第三方源码、运行时、`node_modules`、SQLite、项目数据和日志由 `projects/deployed_apps/.gitignore` 排除；只跟踪启动脚本、说明和忽略规则。
+
+## ADR-2026-11-15-02：为 Windows 和 Next.js 16 做最小兼容修复
+
+- Huobao 使用 next-intl 的 `localePrefix: 'always'`，并将 Next.js 16 弃用的 `middleware.ts` 迁移为 `proxy.ts`，避免中文根路径重定向循环。
+- OpenMontage 的 `store_lock.py` 在 Windows 使用 `msvcrt.locking`，Linux 仍使用 `fcntl.flock`。
+- 以上均为第三方项目在当前环境的启动兼容改动，不改变其业务逻辑。

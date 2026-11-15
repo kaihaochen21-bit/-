@@ -91,3 +91,19 @@
 - 只有仓库根目录 `SKILL.md` 可作为自动安装单元；嵌套 Skill 合集目前只推荐，不自动展开安装。
 - 安装源使用 `codeload.github.com/<repo>/zip/HEAD` 官方归档，禁止路径穿越和符号链接。
 - SQLite 新增 `radar_curation` 和 `radar_installs`，保存理由、状态、来源、许可证、路径和时间。
+
+
+## TASK-027：推荐项目本机部署拓扑
+
+```text
+Windows localhost
+├── 3001  Huobao Drama AI (Next.js production + Prisma + SQLite)
+├── 8787  OpenMontage (FastAPI + Vite dist + disk project store + thread pool)
+└── 3002  Awesome Short Drama Skills (generated static HTML)
+```
+
+- 统一运行面：`projects/deployed_apps/start_all.ps1` 负责检查端口、清除付费 Key 环境变量、隐藏启动进程、记录 PID 和等待健康检查。
+- 统一停止面：`stop_all.ps1` 只停止 PID 文件记录且命令行属于当前部署目录的进程。
+- 运行时隔离：便携 Node 位于 `.tools/`，OpenMontage Python 虚拟环境位于 `.venvs/`。
+- 数据面：Huobao 使用本地 SQLite；OpenMontage 使用磁盘项目目录和进程内媒体任务池；Awesome 为只读静态站。
+- 外部依赖：当前不启用 PostgreSQL、Redis、MinIO、Docker 或付费模型；OpenMontage 的视频合成仍依赖后续安装 FFmpeg。

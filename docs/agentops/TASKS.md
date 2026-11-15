@@ -318,3 +318,27 @@
   - 保留第 5、6 镜提示词，额度恢复后可继续替换为纯豆包版本。
 - 限制：当天豆包只确认到 4 段唯一视频；60 秒版为 4 段豆包 + 2 段本地后期补镜。
 
+
+
+## TASK-027：三个推荐 AI 短剧项目本机部署（2026-11-15）
+
+- 状态：VERIFIED_LOCAL
+- 分支：`codex/TASK-027-deploy-recommended-apps`
+- 负责人：orchestrator
+- 范围：
+  - `projects/deployed_apps/awesome-short-drama-skills`
+  - `projects/deployed_apps/huobao-drama-ai`
+  - `projects/deployed_apps/openmontage`
+  - `projects/deployed_apps` 下的统一启动、停止和说明文件
+- 验收：
+  - 三个本机入口均返回 HTTP 200。
+  - Huobao 中文页、SQLite、健康检查和本地管理员登录正常。
+  - OpenMontage 生产前端、FastAPI 健康检查和 Demo 登录正常。
+  - Awesome Short Drama Skills 静态站完成生成并可浏览。
+  - 停止后重新执行统一启动脚本，三个服务仍全部恢复。
+  - 不读取或传递 ARK、Kling、OpenAI 等付费密钥。
+  - 第三方源码、虚拟环境、数据库、日志和归档不进入 Git。
+- 当前边界：
+  - 仅监听 `127.0.0.1`，未发布公网。
+  - OpenMontage 当前没有可用的 FFmpeg 和视频生成后端；不宣称视频合成链路已验证。
+  - 未配置任何付费模型 Key。

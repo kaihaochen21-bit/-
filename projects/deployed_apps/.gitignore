@@ -1,0 +1,9 @@
+# Third-party source, runtimes, runtime data and logs are local-only.
+*
+!.gitignore
+!README.md
+!start_all.ps1
+!stop_all.ps1
+!start_all.bat
+!stop_all.bat
+!open_all.bat
