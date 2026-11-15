@@ -383,3 +383,5 @@
   - 任务文件写入项目目录的 `doubao_handoff/`。
   - 首镜提示词可复制，状态能回读。
   - `73 passed`。
+
+- Git：本地提交 `956bedd`；已推送 `origin/codex/TASK-029-doubao-low-cost-handoff`。PR 创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-029-doubao-low-cost-handoff
