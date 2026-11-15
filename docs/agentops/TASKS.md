@@ -396,3 +396,5 @@
 - 内容：完整剧本、32 镜分镜表、角色/场景一致性表、32 个逐镜提示词、参考图提示词、关键帧提示词、逐日生产计划、配音与字幕表。
 - 验证：32 个镜头编号连续，合计 320 秒；32 个 prompt 文件全部存在，最长 633 字符；制作包 ZIP 已生成。
 - 边界：未生成任何视频、未调用豆包、未消耗额度。
+
+- Git：本地提交 `0ba1977`；已推送 `origin/codex/TASK-030-last-train-zero-station-storyboard`。PR 创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-030-last-train-zero-station-storyboard
