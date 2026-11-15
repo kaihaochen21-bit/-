@@ -342,3 +342,5 @@
   - 仅监听 `127.0.0.1`，未发布公网。
   - OpenMontage 当前没有可用的 FFmpeg 和视频生成后端；不宣称视频合成链路已验证。
   - 未配置任何付费模型 Key。
+
+- Git：本地提交 `2a2ba4f`；推送 `origin/codex/TASK-027-deploy-recommended-apps` 因 GitHub HTTPS 连接重置失败，远程分支尚未更新。

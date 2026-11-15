@@ -226,3 +226,4 @@
 - 本地账号：Huobao 已有管理员 `admin@huobao.local`；OpenMontage 使用页面 Demo 登录。
 - 当前未配置付费模型 Key；OpenMontage 的 FFmpeg 健康项为 `false`，因此视频合成链路仍需后续补齐。
 - 下一步：需要时安装便携 FFmpeg，再验证 OpenMontage 的 TTS、剪辑和视频导出链路。
+- Git：本地提交 `2a2ba4f`；远程推送因 GitHub HTTPS 连接重置失败，待网络恢复后重试。
