@@ -527,3 +527,16 @@ cd projects\novel_promo_factory
 - OpenMontage `/api/health` 返回 `ffmpeg=false`，因此没有把视频合成和导出标记为已验证。
 - 未配置 Seedream、Seedance、ComfyUI、ARK、Kling 或其他付费生成 Key；没有执行付费调用。
 - 三个入口只在 `127.0.0.1` 提供，不是公网或局域网生产部署。
+
+
+## TASK-028：三合一工作台验证（2026-11-15）
+
+- 页面：`http://127.0.0.1:8765/` 返回 HTTP 200。
+- 浏览器标题：`AI 短剧工作台`。
+- 总览显示：5 个项目；最近项目《会替人做梦的便利店》；雷达 30 未读、4 个优先；今日首选 `UnderleveledBuilder/awesome-short-drama-skills`；豆包 Skill 已安装。
+- hash 导航：`#daily`、`#radar`、`#doubao` 均可切换并显示对应内容。
+- 复制指令：点击“复制豆包制作指令”后显示“已复制到剪贴板”。
+- API：`/api/health` 返回 `ai_short_drama_skill.installed=true`，路径为 `C:\\Users\\陈楷浩\\.codex\\skills\\ai-short-drama`。
+- 自动化测试：`70 passed in 32.40s`。
+- JavaScript：`node --check app/static/app.js` 通过。
+- Python：`py_compile app/config.py app/main.py` 通过。

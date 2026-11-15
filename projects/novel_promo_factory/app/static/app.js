@@ -1,5 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
-const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null, sound: null, radar: null };
+const state = { projects: [], current: null, manual: [], novels: [], health: null, doubao: null, sound: null, radar: null, view: "overview" };
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -54,9 +54,10 @@ async function refreshHealth() {
       ["Seedance", data.jimeng?.seedance?.ok, data.jimeng?.seedance?.default_model || data.seedance_model],
       ["Pexels", data.pexels_configured, data.pexels_configured ? "已配置" : "待申请"],
       ["Pixabay", data.pixabay_configured, data.pixabay_configured ? "已配置" : "待申请"],
-      ["雷达", (data.radar?.unread || 0) >= 0, `${Number(data.radar?.unread || 0)} 未读`],
+      ["GitHub 情报", (data.radar?.unread || 0) >= 0, `${Number(data.radar?.unread || 0)} 未读`],
     ];
     $("#healthPills").innerHTML = items.map(([label, ok, text]) => `<span class="pill ${ok ? "ok" : "bad"}" data-health="${esc(label)}">${esc(label)} · ${esc(text)}</span>`).join("");
+    renderWorkspaceOverview();
   } catch (error) {
     $("#healthPills").innerHTML = `<span class="pill bad">健康检查失败 · ${esc(error.message)}</span>`;
   }
@@ -67,6 +68,7 @@ async function refreshProjects() {
   if (!state.projects.length) {
     $("#projectList").className = "project-list empty";
     $("#projectList").textContent = "还没有项目";
+    renderWorkspaceOverview();
     return;
   }
   $("#projectList").className = "project-list";
@@ -79,6 +81,7 @@ async function refreshProjects() {
   document.querySelectorAll(".project-item").forEach((node) => {
     node.addEventListener("click", () => selectProject(node.dataset.id));
   });
+  renderWorkspaceOverview();
 }
 
 async function refreshDashboard() {
@@ -219,8 +222,9 @@ function renderRadarStats(stats) {
   const badge = $("#radarUnreadBadge");
   badge.textContent = unread > 99 ? "99+" : String(unread);
   badge.classList.toggle("hidden", unread === 0);
-  const healthPill = document.querySelector('[data-health="雷达"]');
-  if (healthPill) healthPill.textContent = `雷达 · ${unread} 未读`;
+  const healthPill = document.querySelector('[data-health="GitHub 情报"]');
+  if (healthPill) healthPill.textContent = `GitHub 情报 · ${unread} 未读`;
+  renderWorkspaceOverview();
 }
 
 function radarInstallLabel(status) {
@@ -382,13 +386,51 @@ async function curateRadar() {
   }
 }
 
+function renderWorkspaceOverview() {
+  const projectMetric = $("#overviewProjectMetric");
+  if (!projectMetric) return;
+  const projects = state.projects || [];
+  const latest = projects[0];
+  projectMetric.textContent = projects.length ? `${projects.length} 个项目` : "还没有项目";
+  $("#overviewProjectLatest").textContent = latest
+    ? `最近：${latest.title} · ${statusLabel(latest.status)}`
+    : "先添加候选小说，或直接创建第一个待审项目。";
+
+  const radarStats = state.radar?.stats || state.health?.radar || {};
+  const unread = Number(radarStats.unread || 0);
+  const priority = Number(radarStats.priority || 0);
+  $("#overviewRadarMetric").textContent = `${unread} 未读 · ${priority} 优先`;
+  const top = state.radar?.shortlist?.[0];
+  $("#overviewRadarTop").textContent = top
+    ? `今日首选：${top.title} · ${Number(top.total_score || 0).toFixed(0)} 分`
+    : "还没有今日精选，进入后点击“立即扫描”或“刷新自动精选”。";
+
+  const skill = state.health?.ai_short_drama_skill;
+  $("#overviewSkillMetric").textContent = skill?.installed ? "已安装" : "未安装";
+  $("#overviewSkillPath").textContent = skill?.path || "C:\\Users\\陈楷浩\\.codex\\skills\\ai-short-drama";
+}
+
+function resolveView(view) {
+  return ({ overview: "overview", factory: "factory", daily: "factory", radar: "radar", skill: "skill", doubao: "skill" })[view] || "overview";
+}
+
 function switchView(view) {
-  const radar = view === "radar";
-  $("#factoryView").classList.toggle("hidden", radar);
-  $("#radarView").classList.toggle("hidden", !radar);
+  view = resolveView(view);
+  state.view = view;
+  const mapping = {
+    overview: "#overviewView",
+    factory: "#factoryView",
+    radar: "#radarView",
+    skill: "#skillView",
+  };
+  Object.entries(mapping).forEach(([key, selector]) => {
+    $(selector).classList.toggle("hidden", key !== view);
+  });
   document.querySelectorAll(".view-tab").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
-  if (radar) refreshRadar().catch((error) => toast(error.message, true));
-  history.replaceState(null, "", radar ? "#radar" : location.pathname);
+  if (view === "radar") refreshRadar().catch((error) => toast(error.message, true));
+  if (view === "overview") renderWorkspaceOverview();
+  const hash = view === "overview" ? location.pathname : view === "factory" ? "#daily" : view === "skill" ? "#doubao" : "#radar";
+  history.replaceState(null, "", hash);
 }
 
 async function loadAll() {
@@ -719,9 +761,16 @@ $("#leadForm").addEventListener("submit", async (event) => {
   } catch (error) { toast(error.message, true); }
 });
 
-loadAll().catch((error) => toast(error.message, true));
+const initialHashView = ({ "#overview": "overview", "#daily": "factory", "#factory": "factory", "#radar": "radar", "#doubao": "skill", "#skill": "skill" })[location.hash] || "overview";
+loadAll().then(() => switchView(initialHashView)).catch((error) => toast(error.message, true));
 document.querySelectorAll(".view-tab").forEach((button) => {
   button.addEventListener("click", () => switchView(button.dataset.view));
+});
+document.querySelectorAll("[data-go-view]").forEach((button) => {
+  button.addEventListener("click", () => switchView(button.dataset.goView));
+});
+document.querySelectorAll("[data-copy-prompt]").forEach((button) => {
+  button.addEventListener("click", () => copyText(button.dataset.copyPrompt));
 });
 ["radarMinScore", "radarTypeFilter", "radarStatusFilter"].forEach((id) => {
   $(`#${id}`).addEventListener("change", () => refreshRadar().catch((error) => toast(error.message, true)));

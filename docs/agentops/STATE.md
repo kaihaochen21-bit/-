@@ -227,3 +227,20 @@
 - 当前未配置付费模型 Key；OpenMontage 的 FFmpeg 健康项为 `false`，因此视频合成链路仍需后续补齐。
 - 下一步：需要时安装便携 FFmpeg，再验证 OpenMontage 的 TTS、剪辑和视频导出链路。
 - Git：本地提交 `2a2ba4f`；远程推送因 GitHub HTTPS 连接重置失败，待网络恢复后重试。
+
+
+## TASK-028 当前结果（2026-11-15）
+
+- 状态：VERIFIED_LOCAL
+- 主入口：`http://127.0.0.1:8765/`
+- 固定分区：
+  - `/#daily`：每日视频项目
+  - `/#radar`：GitHub 情报
+  - `/#doubao`：豆包制作 Skill
+- 后续固定口令：
+  - “做今天的视频项目”
+  - “扫描 GitHub 情报”
+  - “用豆包制作视频”
+- 长期工作说明：`docs/agentops/WORKSPACE.md`
+- 当前界面状态：5 个项目；雷达 30 未读、4 个优先；豆包 Skill 已安装。
+- 测试：`70 passed in 32.40s`；浏览器总览、项目页、GitHub 页、豆包页和复制指令均通过。

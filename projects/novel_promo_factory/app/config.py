@@ -52,6 +52,10 @@ def codex_skills_dir() -> Path:
     return Path(configured).resolve() if configured else (Path.home() / ".codex" / "skills").resolve()
 
 
+def ai_short_drama_skill_dir() -> Path:
+    return codex_skills_dir() / "ai-short-drama"
+
+
 def ensure_dirs() -> None:
     for path in (
         data_dir(), content_dir(), assets_dir(), assets_dir() / "manual",

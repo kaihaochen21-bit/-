@@ -107,3 +107,18 @@ Windows localhost
 - 运行时隔离：便携 Node 位于 `.tools/`，OpenMontage Python 虚拟环境位于 `.venvs/`。
 - 数据面：Huobao 使用本地 SQLite；OpenMontage 使用磁盘项目目录和进程内媒体任务池；Awesome 为只读静态站。
 - 外部依赖：当前不启用 PostgreSQL、Redis、MinIO、Docker 或付费模型；OpenMontage 的视频合成仍依赖后续安装 FFmpeg。
+
+
+## TASK-028：AI 短剧工作台信息架构
+
+```text
+主入口 8765
+├── 总览：三条工作流状态和固定口令
+├── 每日视频项目：候选池、项目、脚本、分镜、豆包导入、声音、发布记录
+├── GitHub 情报：扫描、精选、安全安装、日报
+└── 豆包制作 Skill：OnlyShot 流程、按集解锁、回写项目库
+```
+
+- 前端使用 hash 路由：`#daily`、`#radar`、`#doubao`。
+- 总览不复制业务数据，只读取现有 projects、radar dashboard 和 health 状态。
+- `WORKSPACE.md` 是对外和对话层的工作契约；`PROJECT.md` 记录当前总目标。

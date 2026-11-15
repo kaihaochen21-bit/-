@@ -344,3 +344,23 @@
   - 未配置任何付费模型 Key。
 
 - Git：本地提交 `2a2ba4f`；推送 `origin/codex/TASK-027-deploy-recommended-apps` 因 GitHub HTTPS 连接重置失败，远程分支尚未更新。
+
+
+## TASK-028：重组为 AI 短剧三合一工作台（2026-11-15）
+
+- 状态：VERIFIED_LOCAL
+- 分支：`codex/TASK-028-ai-drama-workspace`
+- 负责人：orchestrator
+- 目标：把每日视频项目、GitHub 情报、豆包制作 Skill 收拢为固定入口和固定对话口令。
+- 改动：
+  - 网站增加“总览 / 每日视频项目 / GitHub 情报 / 豆包制作 Skill”四个视图。
+  - 总览显示项目数、雷达未读数、今日首选和 Skill 安装状态。
+  - 新增 `docs/agentops/WORKSPACE.md`，作为后续对话的固定工作说明。
+  - `/api/health` 增加 `ai_short_drama_skill` 安装状态。
+  - 主页、README 和 FastAPI 标题统一为“AI 短剧工作台”。
+- 验收：
+  - 三个业务入口可见且可切换，原有项目数据未迁移、未破坏。
+  - 总览能读取 5 个现有项目和 30 条未读雷达数据。
+  - 豆包 Skill 显示已安装并返回真实路径。
+  - 固定口令复制功能可用。
+  - `70 passed`，JavaScript 语法检查通过，浏览器四页签冒烟通过。

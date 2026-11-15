@@ -3,24 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>即梦小说推文内容工厂</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261114e">
+  <title>AI 短剧工作台</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20261115workspace">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <h1>即梦小说推文内容工厂</h1>
-      <p class="sub">Seedream + Seedance · Pexels + Pixabay · 半自动发布包</p>
+      <h1>AI 短剧工作台</h1>
+      <p class="sub">每日视频项目 · GitHub 情报 · 豆包制作 Skill</p>
     </div>
     <div id="healthPills" class="pills"></div>
   </header>
 
-  <nav class="view-tabs" aria-label="功能切换">
-    <button class="view-tab active" data-view="factory">内容工厂</button>
-    <button class="view-tab" data-view="radar">AI 情报雷达 <span id="radarUnreadBadge" class="nav-badge hidden">0</span></button>
+  <nav class="view-tabs" aria-label="工作台分区">
+    <button class="view-tab active" data-view="overview">总览</button>
+    <button class="view-tab" data-view="factory">每日视频项目</button>
+    <button class="view-tab" data-view="radar">GitHub 情报 <span id="radarUnreadBadge" class="nav-badge hidden">0</span></button>
+    <button class="view-tab" data-view="skill">豆包制作 Skill</button>
   </nav>
 
-  <main id="factoryView" class="layout">
+  <main id="overviewView" class="workspace-view">
+    <section class="card workspace-hero">
+      <div>
+        <p class="eyebrow">固定工作流 · 不要每天重新找入口</p>
+        <h2>每天只处理三件事</h2>
+        <p class="muted">先做当日视频项目，再扫一次 GitHub 情报，最后用豆包 Skill 把选中的项目推进到成片。三个模块共用同一套项目、脚本、分镜和发布记录。</p>
+      </div>
+      <div class="workspace-actions">
+        <button class="primary" data-go-view="factory">开始今日项目</button>
+        <button data-go-view="radar">扫描 GitHub</button>
+        <button data-go-view="skill">打开豆包流程</button>
+      </div>
+    </section>
+
+    <section class="workspace-grid">
+      <article class="card workspace-card project-lane">
+        <div class="workspace-index">01</div>
+        <div class="workspace-card-body">
+          <p class="eyebrow">搜集 → 建项目 → 出片 → 发布记录</p>
+          <h3>每日视频项目</h3>
+          <p>从候选池或授权文本中筛选题，创建待审项目，生成脚本、分镜、素材和发布包。</p>
+          <div class="workspace-metric">
+            <strong id="overviewProjectMetric">--</strong>
+            <span id="overviewProjectLatest">正在读取项目状态</span>
+          </div>
+        </div>
+        <button data-go-view="factory">进入项目库</button>
+      </article>
+
+      <article class="card workspace-card radar-lane">
+        <div class="workspace-index">02</div>
+        <div class="workspace-card-body">
+          <p class="eyebrow">自动搜集 → 自动精选 → 安全试用</p>
+          <h3>GitHub 情报</h3>
+          <p>追踪相关仓库、Skill 和官方动态，只把高分、可降本、风险可接受的项目推到前面。</p>
+          <div class="workspace-metric">
+            <strong id="overviewRadarMetric">--</strong>
+            <span id="overviewRadarTop">正在读取情报状态</span>
+          </div>
+        </div>
+        <button data-go-view="radar">查看今日精选</button>
+      </article>
+
+      <article class="card workspace-card doubao-lane">
+        <div class="workspace-index">03</div>
+        <div class="workspace-card-body">
+          <p class="eyebrow">剧本 → 分镜图 → 豆包出片 → 初剪</p>
+          <h3>豆包制作 Skill</h3>
+          <p>固定使用已安装的 ai-short-drama 流程；先做低成本创作和分镜，确认后再消耗视频额度。</p>
+          <div class="workspace-metric">
+            <strong id="overviewSkillMetric">已安装</strong>
+            <span id="overviewSkillPath">C:\Users\陈楷浩\.codex\skills\ai-short-drama</span>
+          </div>
+        </div>
+        <button data-go-view="skill">查看制作流程</button>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">这个对话框里的固定说法</p>
+          <h2>以后不用解释第二遍</h2>
+        </div>
+      </div>
+      <div class="prompt-grid">
+        <button class="prompt-chip" data-copy-prompt="做今天的视频项目：先检查候选池，筛选 3 个适合竖屏短剧的选题，各创建一个待审项目并生成脚本和分镜，不要调用付费 API。">做今日视频项目</button>
+        <button class="prompt-chip" data-copy-prompt="扫描 GitHub：先完成采集和自动精选，只告诉我最值得试的 3 个项目，说明降本价值、许可证、风险和下一步；安全 Skill 每天最多自动安装 1 个。">扫描 GitHub 情报</button>
+        <button class="prompt-chip" data-copy-prompt="用豆包制作视频：先读取当前项目和 ai-short-drama Skill，按低成本阶段推进；出片前先给我 dry-run 和额度估算，得到我确认后再生成。">用豆包制作视频</button>
+      </div>
+      <p class="muted">点击按钮会复制指令，回到对话框粘贴即可。默认顺序是：先选项目，再查工具，最后出片，避免先消耗豆包额度。</p>
+    </section>
+  </main>
+
+  <main id="factoryView" class="layout hidden">
     <aside class="sidebar">
       <section class="card">
         <h2>新建项目</h2>
@@ -251,7 +327,67 @@
       <p class="muted">GitHub 不提供历史 Star 曲线，第一次扫描只建立基线。程序不登录平台、不调用付费生成 API；自动安装只处理通过许可证、路径和危险模式检查的标准 Skill，且安装过程不执行仓库脚本。</p>
     </section>
   </main>
+
+  <main id="skillView" class="workspace-view hidden">
+    <section class="card skill-hero">
+      <div>
+        <p class="eyebrow">已安装 · OnlyShot / ai-short-drama · v0.7.0</p>
+        <h2>豆包视频制作 Skill</h2>
+        <p class="muted">这是三条工作流中的“执行层”。项目选题来自每日项目库，方法与工具来自 GitHub 情报；只有项目确认后，才进入豆包出片。</p>
+      </div>
+      <div class="skill-meta">
+        <span>安装目录</span>
+        <code>C:\Users\陈楷浩\.codex\skills\ai-short-drama</code>
+      </div>
+    </section>
+
+    <section class="workspace-grid skill-steps">
+      <article class="card">
+        <span class="workspace-index">1</span>
+        <h3>低成本的创作阶段</h3>
+        <p>先做题材、IP 简报、故事架构、人物设定和分镜图。这个阶段目标是反复迭代，不急着生成整集视频。</p>
+      </article>
+      <article class="card">
+        <span class="workspace-index">2</span>
+        <h3>按集解锁，不批量烧额度</h3>
+        <p>先生成一集验证角色、镜头和提示词。出片前必须查看 dry-run、预估积分和当前模型，再决定是否继续。</p>
+      </article>
+      <article class="card">
+        <span class="workspace-index">3</span>
+        <h3>回到项目库做后期</h3>
+        <p>把豆包片段按 shot-01、shot-02 导入当前项目，交给网页项目库做字幕、声音、拼接、质检和发布包。</p>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">三块内容如何串起来</p>
+          <h2>从情报到成片的标准顺序</h2>
+        </div>
+      </div>
+      <div class="flow-rail">
+        <div><strong>每日项目</strong><span>确定今天做什么</span></div>
+        <b>→</b>
+        <div><strong>GitHub 情报</strong><span>决定用什么方法降本</span></div>
+        <b>→</b>
+        <div><strong>豆包 Skill</strong><span>确认后按集出片</span></div>
+        <b>→</b>
+        <div><strong>项目库后期</strong><span>声音、字幕、发布包</span></div>
+      </div>
+    </section>
+
+    <section class="card skill-command-card">
+      <div>
+        <p class="eyebrow">以后只发这一句就能启动</p>
+        <h2>固定启动指令</h2>
+        <p class="muted">我会先读取当前项目、Skill 和相关文件，再给你下一步选项；不会直接消耗付费额度。</p>
+      </div>
+      <button class="primary" data-copy-prompt="用豆包制作视频：先读取当前项目和 ai-short-drama Skill，按 Phase 1 创作、Phase 1.5 分镜图、Phase 2 按集出片推进；每次出片前先给我 dry-run 和额度估算，得到我确认后再生成。">复制豆包制作指令</button>
+    </section>
+  </main>
+
   <div id="toast" class="toast"></div>
-  <script src="/static/app.js?v=20261114ed"></script>
+  <script src="/static/app.js?v=20261115workspace"></script>
 </body>
 </html>

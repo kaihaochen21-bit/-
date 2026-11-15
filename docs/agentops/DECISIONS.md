@@ -250,3 +250,17 @@
 - Huobao 使用 next-intl 的 `localePrefix: 'always'`，并将 Next.js 16 弃用的 `middleware.ts` 迁移为 `proxy.ts`，避免中文根路径重定向循环。
 - OpenMontage 的 `store_lock.py` 在 Windows 使用 `msvcrt.locking`，Linux 仍使用 `fcntl.flock`。
 - 以上均为第三方项目在当前环境的启动兼容改动，不改变其业务逻辑。
+
+
+## ADR-032：三条 AI 短剧工作流共用同一主工作台
+
+- 决策：不拆成三个独立网站，统一使用 `projects/novel_promo_factory` 作为主工作台，通过“总览 / 每日项目 / GitHub 情报 / 豆包 Skill”分区。
+- 理由：三类工作共享项目、脚本、分镜、素材和发布记录；拆成多套应用会造成重复数据库和文件孤岛。
+- 影响：主网站成为唯一入口；部署的 Huobao、OpenMontage 和 Skill 目录保持独立，作为参考工具或执行层，不替代主项目数据。
+
+## ADR-033：固定对话口令映射到固定流程
+
+- “做今天的视频项目”默认只创建待审项目，不调用付费 API。
+- “扫描 GitHub 情报”默认输出最多 3 个可执行建议，安全 Skill 每天最多安装 1 个。
+- “用豆包制作视频”默认先读取项目与 `ai-short-drama` Skill，出片前必须 dry-run 和额度确认。
+- 以上规则写入 `docs/agentops/WORKSPACE.md`，后续对话以此为准。

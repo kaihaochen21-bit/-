@@ -52,3 +52,26 @@ def test_sound_plan_api(tmp_path, monkeypatch):
         assert response.status_code == 200
         assert response.json()["planned"] is True
         assert client.get(f"/api/projects/{project['id']}/sound/status").status_code == 200
+
+
+def test_workspace_landing_and_skill_status(tmp_path, monkeypatch):
+    skill_root = tmp_path / "skills"
+    (skill_root / "ai-short-drama").mkdir(parents=True)
+    monkeypatch.setenv("CODEX_SKILLS_DIR", str(skill_root))
+    monkeypatch.setenv("NOVEL_PROMO_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("NOVEL_PROMO_CONTENT_DIR", str(tmp_path / "content"))
+    monkeypatch.setenv("NOVEL_PROMO_ASSETS_DIR", str(tmp_path / "assets"))
+
+    with TestClient(app) as client:
+        page = client.get("/")
+        assert page.status_code == 200
+        assert "AI 短剧工作台" in page.text
+        assert "每日视频项目" in page.text
+        assert "GitHub 情报" in page.text
+        assert "豆包制作 Skill" in page.text
+
+        health = client.get("/api/health")
+        assert health.status_code == 200
+        skill = health.json()["ai_short_drama_skill"]
+        assert skill["installed"] is True
+        assert skill["path"].endswith("ai-short-drama")

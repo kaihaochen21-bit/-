@@ -23,7 +23,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="即梦 API 小说推文内容工厂", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="AI 短剧工作台", version="1.1.0", lifespan=lifespan)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -156,6 +156,10 @@ async def health(deep: bool = False) -> dict[str, Any]:
         "kling_ignored": True,
         "github_token_configured": bool(os.getenv("GITHUB_TOKEN")),
         "radar": db.radar_dashboard(),
+        "ai_short_drama_skill": {
+            "installed": config.ai_short_drama_skill_dir().is_dir(),
+            "path": str(config.ai_short_drama_skill_dir()),
+        },
     }
     if deep:
         try:

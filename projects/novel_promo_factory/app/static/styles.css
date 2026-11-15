@@ -181,3 +181,182 @@ td { color: #d1d8e7; line-height: 1.45; }
 .radar-install-row span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
 .radar-install-row code { color: #8ee5ca; font-size: 11px; max-width: 52%; overflow-wrap: anywhere; }
 @media (max-width: 700px) { .radar-install-row { flex-direction: column; align-items: flex-start; } .radar-install-row code { max-width: 100%; } }
+
+
+/* TASK-028 · unified AI drama workspace */
+.workspace-view {
+  padding: 0 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.workspace-hero,
+.skill-hero,
+.skill-command-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 28px;
+  background: linear-gradient(135deg, rgba(29, 45, 82, .96), rgba(18, 24, 36, .98) 58%, rgba(15, 51, 44, .9));
+}
+.workspace-hero h2,
+.skill-hero h2,
+.skill-command-card h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+  min-width: 280px;
+}
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.workspace-card {
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+.workspace-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--accent);
+}
+.workspace-card.radar-lane::before { background: var(--accent-2); }
+.workspace-card.doubao-lane::before { background: var(--warning); }
+.workspace-card-body { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.workspace-card h3 {
+  margin: 0;
+  color: #f7f9ff;
+  font-size: 22px;
+  letter-spacing: .01em;
+}
+.workspace-card p {
+  margin: 0;
+  color: #b7c1d3;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.workspace-index {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 156, 255, .15);
+  border: 1px solid rgba(124, 156, 255, .42);
+  color: #c9d5ff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.radar-lane .workspace-index {
+  background: rgba(89, 214, 176, .13);
+  border-color: rgba(89, 214, 176, .4);
+  color: #b8f4df;
+}
+.doubao-lane .workspace-index {
+  background: rgba(240, 179, 90, .13);
+  border-color: rgba(240, 179, 90, .4);
+  color: #ffdcaa;
+}
+.workspace-metric {
+  margin-top: auto;
+  padding: 12px 14px;
+  border: 1px solid #2b3547;
+  border-radius: 11px;
+  background: rgba(9, 13, 20, .52);
+}
+.workspace-metric strong {
+  display: block;
+  color: #f2f5fb;
+  font-size: 24px;
+  line-height: 1.15;
+}
+.workspace-metric span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.workspace-card > button { align-self: flex-start; }
+.prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.prompt-chip {
+  min-height: 72px;
+  text-align: left;
+  padding: 14px 16px;
+  color: #dce5ff;
+  background: linear-gradient(135deg, rgba(35, 50, 84, .88), rgba(20, 27, 42, .96));
+  border-color: #3e4e70;
+  line-height: 1.55;
+}
+.prompt-chip::after {
+  content: "点击复制";
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.skill-meta {
+  min-width: 340px;
+  max-width: 520px;
+  border: 1px solid #3b5164;
+  border-radius: 12px;
+  background: rgba(8, 19, 23, .62);
+  padding: 13px 15px;
+}
+.skill-meta span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+.skill-meta code { color: #9ce7d0; font-size: 12px; overflow-wrap: anywhere; }
+.skill-steps .card { min-height: 190px; }
+.skill-steps h3 { margin-top: 8px; }
+.skill-steps p { color: #b7c1d3; font-size: 13px; line-height: 1.7; }
+.flow-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 16px;
+}
+.flow-rail > div {
+  border: 1px solid #30415b;
+  border-radius: 11px;
+  background: #101722;
+  padding: 13px;
+}
+.flow-rail strong { display: block; color: #edf2ff; font-size: 13px; }
+.flow-rail span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.flow-rail b { align-self: center; color: #7f96c8; font-size: 18px; }
+.skill-command-card > div { max-width: 760px; }
+.skill-command-card > button { flex: 0 0 auto; }
+@media (max-width: 1180px) {
+  .workspace-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-card.doubao-lane { grid-column: 1 / -1; min-height: 250px; }
+  .flow-rail { grid-template-columns: 1fr 1fr; }
+  .flow-rail b { display: none; }
+}
+@media (max-width: 760px) {
+  .workspace-view { padding: 0 14px 28px; }
+  .workspace-hero, .skill-hero, .skill-command-card { flex-direction: column; align-items: stretch; }
+  .workspace-actions { justify-content: flex-start; min-width: 0; }
+  .workspace-grid, .prompt-grid { grid-template-columns: 1fr; }
+  .workspace-card.doubao-lane { grid-column: auto; }
+  .skill-meta { min-width: 0; max-width: none; }
+  .flow-rail { grid-template-columns: 1fr; }
+}
