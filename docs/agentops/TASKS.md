@@ -385,3 +385,14 @@
   - `73 passed`。
 
 - Git：本地提交 `956bedd`；已推送 `origin/codex/TASK-029-doubao-low-cost-handoff`。PR 创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-029-doubao-low-cost-handoff
+
+
+## TASK-030：最后一班地铁第零站 5 分 20 秒制作包（2026-11-15）
+
+- 状态：VERIFIED_LOCAL（内容包）
+- 分支：`codex/TASK-030-last-train-zero-station-storyboard`
+- 目标：为豆包多日生成制作一部 32 镜、320 秒的悬疑恐怖长片。
+- 产物：`projects/最后一班地铁_第零站_5分20秒_制作包/`
+- 内容：完整剧本、32 镜分镜表、角色/场景一致性表、32 个逐镜提示词、参考图提示词、关键帧提示词、逐日生产计划、配音与字幕表。
+- 验证：32 个镜头编号连续，合计 320 秒；32 个 prompt 文件全部存在，最长 633 字符；制作包 ZIP 已生成。
+- 边界：未生成任何视频、未调用豆包、未消耗额度。
