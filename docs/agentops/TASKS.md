@@ -409,3 +409,5 @@
 - 内容：完整剧本、32 镜分镜表、角色/场景一致性、32 个逐镜提示词、屏幕界面后期方案、逐日计划、配音字幕表、参考图与关键帧提示词。
 - 验证：32 个镜头连续，总时长 320 秒；32 个 prompt 文件全部存在；最长 prompt 638 字符；ZIP 已生成。
 - 边界：未生成视频、未调用豆包、未消耗额度。
+
+- Git：本地提交 `f881e1b`；已推送 `origin/codex/TASK-031-phone-sleep-photo-storyboard`。PR 创建入口：https://github.com/kaihaochen21-bit/-/pull/new/codex/TASK-031-phone-sleep-photo-storyboard
